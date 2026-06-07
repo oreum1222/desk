@@ -331,7 +331,9 @@ footer b{color:var(--text)}
 </div>
 
 <script>
-/* ===== 실장 전용 PIN (운영 시 변경하세요) ===== */
+/* ===== 실장 전용 PIN =====
+   시트 연동(WEBAPP_URL 설정) 시: 실제 PIN 검증은 서버(Apps Script .gs의 DESK_PIN)에서 수행.
+   아래 값은 '시트 미연동(오프라인)' 일 때만 쓰이는 폴백이며 이때는 민감정보가 없음. */
 const DESK_PIN = "7452";
 
 /* ===== 구글시트 연동 — Apps Script 웹앱 URL 붙여넣기 =====
@@ -648,18 +650,21 @@ $("#deskBtn").addEventListener("click",()=>{
   pin.classList.add("on");pinInput.value="";pinErr.textContent="";setTimeout(()=>pinInput.focus(),50);
 });
 async function tryPin(){
-  if(pinInput.value!==DESK_PIN){pinErr.textContent="PIN이 올바르지 않습니다";pinInput.value="";pinInput.focus();return;}
-  pin.classList.remove("on");
-  // 시트 연동 시: PIN을 서버에 보내 학생메모 포함 데이터 받아오기
+  const entered=pinInput.value.trim();
   if(WEBAPP_URL){
+    // 실제 검증은 서버에서 — 입력한 PIN을 보내고, 학생메모가 내려오면(=정답) 통과
     try{
       const sep=WEBAPP_URL.includes("?")?"&":"?";
-      const r=await fetch(WEBAPP_URL+sep+"pin="+encodeURIComponent(DESK_PIN));
+      const r=await fetch(WEBAPP_URL+sep+"pin="+encodeURIComponent(entered));
       const j=await r.json();
-      if(j&&j.cards&&j.cards.length){CARDS=j.cards;render();}
-    }catch(e){console.warn("실장 데이터 로드 실패",e);}
+      const authed=j&&j.cards&&j.cards.some(c=>c.notes&&c.notes.length);
+      if(authed){CARDS=j.cards;render();pin.classList.remove("on");setDesk(true);return;}
+      pinErr.textContent="PIN이 올바르지 않습니다";pinInput.value="";pinInput.focus();return;
+    }catch(e){pinErr.textContent="연결 오류 — 다시 시도하세요";return;}
   }
-  setDesk(true);
+  // 오프라인(시트 미연동) 폴백 — 민감정보 없음
+  if(entered===DESK_PIN){pin.classList.remove("on");setDesk(true);}
+  else{pinErr.textContent="PIN이 올바르지 않습니다";pinInput.value="";pinInput.focus();}
 }
 $("#pinOk").addEventListener("click",tryPin);
 $("#pinCancel").addEventListener("click",()=>pin.classList.remove("on"));
