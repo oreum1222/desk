@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>[오름] 국어 · 데스크 상담 안내</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" media="print" onload="this.media='all'" />
+<style>
+:root{
+  --bg:#0B0F0C;
+  --bg-grad:#0e1611;
+  --surface:#121A14;
+  --surface-2:#16201892;
+  --border:rgba(255,255,255,.07);
+  --border-strong:rgba(143,191,159,.28);
+  --text:#E8EDE9;
+  --muted:#8A958C;
+  --muted-2:#6f7a72;
+  --accent:#8FBF9F;
+  --accent-deep:#5E9E78;
+  --accent-soft:rgba(143,191,159,.12);
+  --danger:#E08A8A;
+  --danger-soft:rgba(224,138,138,.10);
+  --warn:#E5C07B;
+  --radius:16px;
+  --radius-sm:11px;
+  --shadow:0 10px 30px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;font-family:"Pretendard",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(1200px 600px at 80% -10%, #15211a 0%, transparent 60%),
+    radial-gradient(900px 500px at 0% 0%, #101a13 0%, transparent 55%),
+    var(--bg);
+  background-attachment:fixed;
+  -webkit-font-smoothing:antialiased;line-height:1.5;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+
+/* ── Header ── */
+header.top{position:sticky;top:0;z-index:50;
+  background:rgba(11,15,12,.78);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border)}
+.top-in{display:flex;align-items:center;gap:16px;padding:16px 0}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.logo{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;
+  background:linear-gradient(145deg,#1d2c22,#16201a);border:1px solid var(--border-strong);
+  color:var(--accent);font-size:18px;flex:none}
+.brand h1{font-size:16px;margin:0;font-weight:700;letter-spacing:-.2px;white-space:nowrap}
+.brand p{margin:1px 0 0;font-size:12px;color:var(--muted)}
+.top-actions{margin-left:auto;display:flex;align-items:center;gap:10px}
+.desk-btn{display:inline-flex;align-items:center;gap:7px;cursor:pointer;
+  border:1px solid var(--border-strong);background:transparent;color:var(--accent);
+  font-family:inherit;font-size:13px;font-weight:600;padding:9px 14px;border-radius:10px;transition:.18s}
+.desk-btn:hover{background:var(--accent-soft)}
+.desk-btn .dot{width:7px;height:7px;border-radius:50%;background:var(--muted-2);transition:.18s}
+body.desk-on .desk-btn{border-color:var(--danger);color:var(--danger);background:var(--danger-soft)}
+body.desk-on .desk-btn .dot{background:var(--danger);box-shadow:0 0 8px var(--danger)}
+
+/* ── Tabs ── */
+nav.tabs{position:sticky;top:67px;z-index:40;background:rgba(11,15,12,.72);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.tabs-in{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tabs-in::-webkit-scrollbar{display:none}
+.tab{appearance:none;border:0;background:0;color:var(--muted);font-family:inherit;
+  font-size:14px;font-weight:600;padding:15px 16px;cursor:pointer;position:relative;white-space:nowrap;transition:.15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent)}
+.tab.active::after{content:"";position:absolute;left:14px;right:14px;bottom:-1px;height:2px;
+  background:var(--accent);border-radius:2px}
+
+main{padding:26px 0 70px}
+.panel{display:none;animation:fade .3s ease}
+.panel.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ── Controls ── */
+.controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:18px}
+.search{flex:1;min-width:220px;position:relative}
+.search input{width:100%;background:var(--surface);border:1px solid var(--border);
+  color:var(--text);font-family:inherit;font-size:14px;padding:12px 14px 12px 40px;border-radius:12px;outline:none;transition:.18s}
+.search input:focus{border-color:var(--border-strong);box-shadow:0 0 0 3px var(--accent-soft)}
+.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:.5}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{border:1px solid var(--border);background:var(--surface);color:var(--muted);
+  font-family:inherit;font-size:13px;font-weight:600;padding:9px 14px;border-radius:999px;cursor:pointer;transition:.15s}
+.chip:hover{color:var(--text);border-color:var(--border-strong)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#0c1410}
+.count{color:var(--muted);font-size:13px;margin:0 2px 16px}
+.count b{color:var(--accent)}
+
+/* ── School cards ── */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:16px}
+.card{background:linear-gradient(180deg,var(--surface),var(--surface-2));
+  border:1px solid var(--border);border-radius:var(--radius);padding:20px;
+  box-shadow:var(--shadow);transition:.2s;display:flex;flex-direction:column;gap:14px}
+.card:hover{border-color:var(--border-strong);transform:translateY(-3px)}
+.card-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.card-head .name{font-size:18px;font-weight:800;letter-spacing:-.3px;line-height:1.2}
+.gradebadge{font-size:11px;font-weight:700;line-height:1;padding:5px 9px 4px;border-radius:7px;flex:none;
+  background:var(--accent-soft);color:var(--accent);border:1px solid var(--border-strong);
+  display:inline-flex;align-items:center}
+.headline{font-size:13px;color:var(--accent);font-weight:600;margin-top:7px;line-height:1.45}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-size:11.5px;font-weight:600;color:var(--muted);background:rgba(255,255,255,.04);
+  border:1px solid var(--border);padding:4px 9px;border-radius:7px}
+.tag.diff{color:var(--warn);border-color:rgba(229,192,123,.25);background:rgba(229,192,123,.08)}
+
+.sessions{display:flex;flex-direction:column;gap:7px}
+.sess{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.03);
+  border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;font-size:13px}
+.sess .t{font-weight:700;min-width:88px;white-space:nowrap}
+.sess .who{color:var(--muted)}
+.sess .who .tn{white-space:nowrap}
+.sess .seat{margin-left:auto;font-weight:700;font-size:12px;padding:3px 9px;border-radius:7px;
+  background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+.sess .seat.low{background:rgba(224,138,138,.13);color:var(--danger)}
+.sess .seat.full{background:rgba(255,255,255,.05);color:var(--muted-2)}
+
+.sec{border-top:1px solid var(--border);padding-top:13px}
+.sec h4{margin:0 0 8px;font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.4px;text-transform:uppercase;opacity:.9}
+.sec ul{margin:0;padding-left:18px;font-size:14px;color:#EAF0EC;line-height:1.72}
+.sec ul li{margin:5px 0}
+.sec ul li::marker{color:var(--accent)}
+.sec p{margin:0;font-size:14px;color:#EAF0EC;line-height:1.72}
+.kv{font-size:14px;color:#EAF0EC;line-height:1.72}
+.kv b{color:#fff}
+.score{color:var(--accent);font-weight:700}
+
+.linkbtn{display:inline-flex;align-items:center;gap:7px;align-self:flex-start;
+  background:var(--accent);color:#0c1410;font-weight:700;font-size:13px;text-decoration:none;
+  padding:10px 16px;border-radius:10px;transition:.18s}
+.linkbtn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+
+/* ── desk-only ── */
+.desk-only{display:none}
+body.desk-on .desk-only{display:block}
+.desk-box{border-top:1px dashed var(--danger);margin-top:2px;padding-top:12px}
+.desk-box h4{color:var(--danger);display:flex;align-items:center;gap:6px}
+.desk-box ul{padding-left:17px;font-size:13px;color:#e7d2d2}
+.desk-box ul li{margin:4px 0}
+.desk-hint{font-size:11.5px;color:var(--muted-2);margin-top:6px}
+
+/* ── tables (timetable / matching / curriculum) ── */
+.tablecard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;margin-bottom:20px}
+.tablecard .th{padding:15px 18px;font-size:15px;font-weight:800;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:9px}
+.tablecard .th .pin{font-size:12px;font-weight:600;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:11px 16px;border-bottom:1px solid var(--border)}
+th{color:var(--muted);font-weight:600;font-size:12px;background:rgba(255,255,255,.02)}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:rgba(143,191,159,.04)}
+td .seat{font-weight:700}
+.seat-low{color:var(--danger)}.seat-ok{color:var(--accent)}.seat-full{color:var(--muted-2)}
+
+/* ── timetable kanban board ── */
+.tt-board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;align-items:start}
+.tt-col{display:flex;flex-direction:column;gap:11px}
+.tt-title{font-size:14px;font-weight:800;color:var(--accent);margin:0 0 3px;
+  display:flex;align-items:center;gap:8px;padding-bottom:9px;border-bottom:1px solid var(--border-strong)}
+.tt-title .n{font-size:11px;font-weight:600;color:var(--muted);background:var(--accent-soft);
+  border:1px solid var(--border-strong);padding:2px 7px;border-radius:999px}
+.tt-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:13px 15px;transition:.18s}
+.tt-card:hover{border-color:var(--border-strong)}
+.tt-h{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.tt-h .sname{font-weight:800;font-size:15.5px;letter-spacing:-.2px}
+.tt-h .gradebadge{font-size:10.5px;padding:3px 7px}
+.tt-row{display:flex;flex-direction:column;gap:5px;padding:9px 0;font-size:13px;border-top:1px solid var(--border)}
+.tt-row .r1{display:flex;align-items:center;gap:8px}
+.tt-row .d{font-weight:700;color:var(--text);white-space:nowrap}
+.tt-row .r2{display:flex;align-items:center;gap:6px;min-width:0}
+.tt-row .tch{color:var(--muted);font-size:12.5px;white-space:nowrap}
+.tt-row .sep{color:var(--muted-2);font-size:11px}
+.tt-row .bk{color:var(--muted-2);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt-row .seat{margin-left:auto;font-weight:700;font-size:12px;padding:4px 9px;border-radius:7px;white-space:nowrap;
+  background:var(--accent-soft);color:var(--accent)}
+.tt-row .seat.low{background:rgba(224,138,138,.14);color:var(--danger)}
+.tt-row .seat.full{background:rgba(255,255,255,.05);color:var(--muted-2)}
+.tt-row .seat .frac{font-weight:500;opacity:.6;margin-left:3px}
+
+.note{background:var(--accent-soft);border:1px solid var(--border-strong);border-radius:12px;
+  padding:14px 16px;font-size:13px;color:#cfe0d5;margin-bottom:18px}
+.sub{font-size:13px;color:var(--muted);margin:-6px 0 18px}
+
+/* curriculum legend */
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-bottom:14px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.mon-x{color:var(--muted)}.mon-i{color:var(--accent)}.mon-s{color:var(--warn)}
+
+/* footer */
+footer{border-top:1px solid var(--border);padding:22px 0;color:var(--muted);font-size:13px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:8px 26px;align-items:center}
+footer b{color:var(--text)}
+
+/* PIN modal */
+.modal{position:fixed;inset:0;background:rgba(6,9,7,.72);backdrop-filter:blur(4px);
+  display:none;place-items:center;z-index:100}
+.modal.on{display:grid}
+.modal .box{background:var(--surface);border:1px solid var(--border-strong);border-radius:18px;
+  padding:26px;width:300px;text-align:center;box-shadow:var(--shadow)}
+.modal h3{margin:0 0 4px;font-size:17px}
+.modal p{margin:0 0 16px;font-size:12.5px;color:var(--muted)}
+.modal input{width:100%;text-align:center;letter-spacing:8px;font-size:20px;font-family:inherit;
+  background:var(--bg);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:11px;outline:none}
+.modal input:focus{border-color:var(--accent)}
+.modal .err{color:var(--danger);font-size:12px;height:16px;margin:8px 0 0}
+.modal .btns{display:flex;gap:8px;margin-top:14px}
+.modal button{flex:1;font-family:inherit;font-weight:700;font-size:13px;padding:11px;border-radius:10px;cursor:pointer;border:1px solid var(--border)}
+.modal .ok{background:var(--accent);color:#0c1410;border-color:var(--accent)}
+.modal .cancel{background:transparent;color:var(--muted)}
+
+.empty{text-align:center;color:var(--muted);padding:60px 0;font-size:14px}
+
+@media(max-width:1000px){.tt-board{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){
+  .brand p{display:none}.grid{grid-template-columns:1fr}
+  .tt-board{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap top-in">
+  <div class="brand">
+    <div class="logo">⛰</div>
+    <div><h1>[오름] 국어 · 데스크 상담 안내</h1><p>실장님 상담용 · 강의별 특징 &amp; 학교별 전략</p></div>
+  </div>
+  <div class="top-actions">
+    <button class="desk-btn" id="deskBtn"><span class="dot"></span><span id="deskLabel">실장 전용 보기</span></button>
+  </div>
+</div></header>
+
+<nav class="tabs"><div class="wrap tabs-in" id="tabs">
+  <button class="tab active" data-tab="schools">학교별 상담</button>
+  <button class="tab" data-tab="time">시간표 · 여석</button>
+  <button class="tab" data-tab="fit">성향 진단</button>
+  <button class="tab" data-tab="curri">운영 · 커리큘럼</button>
+</div></nav>
+
+<main class="wrap">
+
+  <!-- ░░ 학교별 상담 ░░ -->
+  <section class="panel active" id="schools">
+    <div class="controls">
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="q" placeholder="학교·강사·시간 검색 (예: 산본고, 은규, 토요일)" />
+      </div>
+      <div class="chips" id="gradeChips">
+        <button class="chip on" data-g="all">전체</button>
+        <button class="chip" data-g="중등">중등</button>
+        <button class="chip" data-g="고1">고1</button>
+        <button class="chip" data-g="고2">고2</button>
+        <button class="chip" data-g="고3">고3</button>
+      </div>
+    </div>
+    <div class="count" id="count"></div>
+    <div class="grid" id="cards"></div>
+    <div class="empty" id="empty" style="display:none">검색 결과가 없습니다.</div>
+  </section>
+
+  <!-- ░░ 시간표 ░░ -->
+  <section class="panel" id="time">
+    <div class="note">💡 여석은 <b style="color:var(--accent)">초록</b> = 여유, <b style="color:var(--danger)">빨강</b> = 마감 임박(2자리 이하), 회색 = 정원 마감. 상담 시 마감 임박 반은 등록을 서두르도록 안내.</div>
+    <div id="timeTables"></div>
+  </section>
+
+  <!-- ░░ 성향 진단 ░░ -->
+  <section class="panel" id="fit">
+    <p class="sub">상담 클로징용 — "우리 아이 성향"을 짚고 유리한 학교/관리 포인트로 연결하세요.</p>
+    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(330px,1fr))" id="fitCards"></div>
+    <div class="tablecard" style="margin-top:20px">
+      <div class="th">성향별 주의 체크 <span class="pin">— 학부모 공감 포인트</span></div>
+      <table><thead><tr><th>우리 아이</th><th>주의할 학교</th><th>집중 공략</th></tr></thead><tbody id="fitTable"></tbody></table>
+    </div>
+    <div class="tablecard">
+      <div class="th">검증된 결과 <span class="pin">— 2026 1학기 중간</span></div>
+      <div style="padding:16px 18px;font-size:13.5px;color:#d4dbd6">
+        <p style="margin:0 0 10px"><b style="color:var(--accent)">100점 배출교</b> : 군포중앙고 · 산본고 · 수리고 · 수원외고 · 안양예고</p>
+        <table><thead><tr><th>학교</th><th>고1</th><th>고2</th><th>고3</th></tr></thead><tbody id="avgTable"></tbody></table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ░░ 커리큘럼 ░░ -->
+  <section class="panel" id="curri">
+    <div class="tablecard">
+      <div class="th">공통 운영 시스템 <span class="pin">— 전 강좌 공통 상담 멘트</span></div>
+      <div style="padding:16px 18px"><ul style="margin:0;padding-left:18px;font-size:13.5px;color:#d4dbd6;line-height:1.9" id="sysList"></ul></div>
+    </div>
+    <div class="tablecard">
+      <div class="th">중2 · 중3 연간 커리큘럼 <span class="pin">— 중2·중3 동일 구조</span></div>
+      <div style="padding:14px 18px 4px">
+        <div class="legend"><span><i style="background:var(--muted)"></i>비내신(정규)</span><span><i style="background:var(--accent)"></i>내신 집중</span><span><i style="background:var(--warn)"></i>여름/겨울 특강</span></div>
+      </div>
+      <table><thead><tr><th>월</th><th>구분</th><th>과정</th><th>세부 내용</th></tr></thead><tbody id="midCurri"></tbody></table>
+    </div>
+    <div class="tablecard">
+      <div class="th">고1 연간 커리큘럼</div>
+      <table><thead><tr><th>시기</th><th>과정</th></tr></thead><tbody id="hi1Curri"></tbody></table>
+    </div>
+  </section>
+
+</main>
+
+<footer><div class="wrap">
+  <span>📞 <b>031-391-7452</b> / 010-2452-7452</span>
+  <span>🕑 상담 평일 <b>14:00~22:00</b></span>
+  <span>💬 카카오톡 채널 <b>오름국어학원</b></span>
+  <span>📍 산본로 386번길 5-27 <b>본관 2층</b></span>
+  <span>✅ 입반 전 상담 필수 · 강의별 순차 개강</span>
+</div></footer>
+
+<!-- PIN modal -->
+<div class="modal" id="pin">
+  <div class="box">
+    <h3>🔒 실장 전용 모드</h3>
+    <p>학생 개별 메모 등 민감 정보가 표시됩니다.<br>PIN을 입력하세요.</p>
+    <input id="pinInput" type="password" inputmode="numeric" maxlength="6" placeholder="••••" />
+    <div class="err" id="pinErr"></div>
+    <div class="btns"><button class="cancel" id="pinCancel">취소</button><button class="ok" id="pinOk">확인</button></div>
+  </div>
+</div>
+
+<script>
+/* ===== 실장 전용 PIN (운영 시 변경하세요) ===== */
+const DESK_PIN = "7452";
+
+/* ===== 구글시트 연동 — Apps Script 웹앱 URL 붙여넣기 =====
+   (비워두면 아래 내장 데이터로 동작. URL 넣으면 시트가 우선) */
+const WEBAPP_URL = "";  // 예: https://script.google.com/macros/s/XXXXXXXX/exec
+
+/* ===== DATA ===== */
+const SYS = [
+ "정규 수업 : 주 1회 3시간, 학교별 진도 맞춤 현장 강의",
+ "복습 시험 : 매주 진도 시작 전 30분 (빈칸형 — 피상적 객관식 X)",
+ "과제 : 매 수업 과제 검사 / 고등 주 100문제, 중등 작품당 50문제 수준",
+ "3단계 자체 교재 : 기본·개념서(학교 맞춤) → 유형서(워크북) → 복습시험(빈칸)",
+ "클리닉 : 개인별 질의응답·오답 원인 분석·사고과정 교정 (선생님별 요일 상이)",
+ "보강 : 영상 보강 + 클리닉 필수",
+ "관리 : 학생 성향 분석 → 학습전략 수립 → 시험 후 학생·학부모 상담",
+ "자체 콘텐츠 : 관내 6개교 5년치 기출 데이터 기반 자체 변형 문제 (시중 문제집 X)",
+ "수행평가 : 1:1 밀착 첨삭으로 감점 요인 사전 제거"
+];
+
+let CARDS = [
+ // ── 고1 ── (내장 fallback / 시트 연동 시 덮어씀)
+ {school:"군포고",grade:"고1",headline:"관내 최대 시험 범위, 속도로 압도하라",
+  tags:["문학21+문법5","객24+서술2","논술형 有","1차 무난"],diff:"예상 1컷 70후반~80초반",
+  sessions:[["토 12-15","은규",10,15,"비상(박)"],["토 14-17","은규",4,15,"비상(박)"]],
+  structure:["총 26문항 · 객관식 24 + 서술형 2","문학 21문항(약 80%) + 문법 5문항","교과서 1단원~끝까지 전부 → 관내 최대 범위","당해년도 모의고사 반영","화법·작문 지문 필수 포함"],
+  disc:["1페이지 킬러 배치(문학·문법 모두 초반 멘탈 흔들기)","시험지 넘어가는 긴 <보기>로 기선제압(선지는 오히려 간단)","생소한 외부지문 1~2문제(비중 작지만 임팩트 큼)","관내 유일 논술형 — 올해 개념어(서술자의 시점)"],
+  strat:["긴 보기→선지 우선/근거 소거 루틴","1페이지 건너뛰기·시간배분 훈련","개념어 암기 + 서술형 답안 템플릿","군포고 출신 조교 동반"],
+  score:"최고점 96.4점, 90점대 다수. 1등급 다수 예상",
+  feat:"군포고 출신 조교쌤과 경향 완벽 파악, 재미+실력. 2학기 범위 1.5배↑·문법 서술형 고배점(7점) 주의"},
+
+ {school:"군포중앙고",grade:"고1",headline:"문학 vs 문법 극단 분리, 은근히 높은 난이도",
+  tags:["문학21+독서3","문법 X(중간)","외부지문 압도","1차 어려움"],diff:"체감 난이도 높음",
+  sessions:[["일 10-13","예담",5,15,"비상(강)"]],
+  structure:["객관식 24문항 · 문학 21 + 비문학 3","중간고사 범위에 문법 없음 (작년 동일)","1차 = 문학만 / 2차 = 문법만 분리 응시","한 영역 올인 구조 → 깊고 지엽적 출제"],
+  disc:["외부지문 압도적 비중","예상 밖 고전소설(임호은전·23년 고1 11월 학평)","고전 장르복합(수오재기+만흥+보리타작)","고난도 경제·관세 비문학","암기형 상위권 변별"],
+  strat:["EBS 연계 장문 독해","필수 고전어휘·독해매뉴얼 체화","영역별 심화 모의고사 소화","개념어/문법용어 정의 확립","실전 멘탈관리"],
+  score:"(설명회 시점 취합 중)",
+  feat:"수행평가 주의 — 지필 높아도 수행 1~2점 감점 시 등급 직결('감점 제로'가 1등급 핵심). 수업 분위기 매우 좋음·적극 참여"},
+
+ {school:"산본고",grade:"고1",headline:"고3 수준 심화 국어(내신에 수능특강), 단순암기 불가",
+  tags:["문학12+독서4+문법8","서술형 X","수능특강 직접연계"],diff:"평이한 문법, 까다로운 문학",
+  sessions:[["목 19-22","은규",11,15,"비상(박)"],["금 19-22","은규",8,15,"비상(박)"],["토 10-13","예담",9,15,"비상(박)"],["일 18-21","예담",7,15,"비상(박)"]],
+  structure:["총 24문항 · 객관식 24 (서술형 X)","문학 12 + 비문학 4 + 문법 8 (음운변동)","문법 범위 = 2027 EBS 수능특강 언어와매체(음운편)","고1 3월 학평 활용"],
+  disc:["교과서 연계 낯선 외부지문 다수","작품 간 비교분석","수능특강 직접 연계(17·18·19번 단순변형, 선지 단어까지 동일)"],
+  strat:["부교재(수능특강) 완벽 분석 — 선지 단어·예시까지","개념어 낯선작품 적용 훈련"],
+  score:"90점대 다수",
+  feat:"언어/감각형에 유리. 2학기 고전시가·고전문학 급상승 + 20점 배점 문법 수행평가 예정 → 겨울방학 문법 선행 골든타임"},
+
+ {school:"수리고",grade:"고1",headline:"적은 범위·높은 배점, 한 문제의 무게",
+  tags:["문학13+문법8","서술형 X","고배점 실수금지","1컷 90점대"],diff:"작년보다 평이",
+  sessions:[["수 17-20","지연",2,15,"창비"],["일 11-14","지연",9,15,"창비"]],
+  structure:["객관식 21문항 (서술형 X)","문학 13 + 문법 8 (음운변동)","문항 적고 배점 큼 → 실수 최소화 필수"],
+  disc:["문학소통 4맥락(작가·독자·사회문화·문학사) 점검형 2문항","작가 인터뷰 <보기> 반복 출제","동일작가 연계 외부지문","문법 변형 까다로움"],
+  strat:["4맥락 키워드 매핑·선지 근거 체크리스트","문항당 3분 컷·플래그 전략","3단 비교표(인물동기·서술관점·서사구조)","문법 원리 학습"],
+  score:"1등급컷 90점대 유지(최상위권 수준 높음)",
+  feat:"언어/감각형 유리. 단 배점 커서 실수 주의(유리심장 주의)"},
+
+ {school:"용호고",grade:"고1",headline:"양극화 점수대, 100점 방지턱을 넘어라",
+  tags:["문학14+문법9","서술형 X","1~2점차 등급","1컷 1~2개"],diff:"작년보다↑ 그래도 평이",
+  sessions:[["일 14-17","예담",4,15,"미래엔"]],
+  structure:["객관식 23문항 (서술형 X)","문학 14 + 문법 9 (음운변동 단독)","상하위권 격차 큼","문항 적어 배점 큼 → 실수 치명"],
+  disc:["100점 방지용 현대문학 외부지문 1~2문제가 상위권 등급 결정","<보기>에 외부지문 적극 활용('성찰' 등 공통주제 비교)","1~2점차로 등급 결정"],
+  strat:["시험범위 지문 완벽숙지(선지 정오는 윗글로 소거)","낯선 시 개념어 해석","'맞힌 문제도 의심' 검토 습관 / 기본 95점 이상 목표"],
+  score:"1개 틀린 수준이 1컷대",
+  feat:"디테일·완벽주의 성향 유리(실수 제로). 수업 분위기 매우 좋음"},
+
+ {school:"흥진고",grade:"고1",headline:"더 이상 쉬운 국어는 없음, 매 시험 난이도 상승",
+  tags:["문학21+문법5","객24+서술2","뒤로 갈수록↑"],diff:"1차 무난→뒤로 급상승",
+  sessions:[["토 10-13","은규",6,15,"비상(강)"]],
+  structure:["총 26문항 · 객관식 24 + 서술형 2","문학 21 + 문법 5 (음운변동)","1차 평이 → 뒤로 갈수록 급상승","최근 난이도 대폭 상향"],
+  disc:["기초 문학개념어 응용(서정갈래 특징·맥락·표현기법)","문법 함정(음운체계표·형태소 등 중등기초 전제)","과거 쉬운 기출 믿으면 낭패"],
+  strat:["기초 개념어 단계별 밀착","누적 문법(중등 형태소 등)+매력적 오답 소거","수능형 변형으로 사고력 확장","1차고사 기선제압 고득점 확보"],
+  score:"(취합 중)",
+  feat:"성실/노력형 유리. 상하위권 편차 커 중상위권 진입 수월, 1등급 굳히기는 심화추론. 항상 밝은 분위기"},
+
+ // ── 고2 ──
+ {school:"군포고",grade:"고2",headline:"평이한 시험, 선생님이라는 변수",
+  tags:["문학 100%","객25+논술1","평이"],diff:"평이",
+  sessions:[["토 17-20","은규",4,15,"지학사"],["일 14-17","은규",17,20,"지학사"]],
+  structure:["총 26문항 · 객관식 25 + 논술형 1","문학 단독 100%","범위 ① 나희덕 / 김소월·신경림·박완서","범위 ② 정철 사미인곡·속미인곡","범위 ③ 박태원 천변풍경 · 박목월 청노루"],
+  disc:["평이한 시험·평이한 난이도, '선생님'이 변수"],
+  strat:["군포고 출신 조교쌤들과 공감 토크"],
+  score:"20~30점 이상 상승 다수, 80점대 후반 다수",
+  feat:"'한 번 들어오면 안 나가는 반'. 성실/노력형 유리"},
+
+ {school:"군포중앙고",grade:"고2",headline:"작년보다 훨씬 내신스러운(쉬운) 시험",
+  tags:["문학 단독","객24","매우 쉬움"],diff:"매우 평이",
+  sessions:[["토 19-22","은규",10,15,"비상(강)"]],
+  structure:["총 24문항 · 객관식 24","문학 단독","범위 ① 고재종·윤동주 / 나희덕·백석 흰바람벽","범위 ② 공무도하가·제가야산독서당·찬기파랑가·모죽지랑가·동동·시조","유인물 윤동주 아우의 인상화 · 시조 6편"],
+  disc:["너무 쉬워서 다시 수정했는데도 쉬웠던 시험"],
+  strat:["엄격한 상호 숙제검사로 반 평균 견인"],
+  score:"중도합류 제외 평균 80점 후반, 100점 2명, 33% 1등급·87% 2등급 이상",
+  feat:"가족 같은 분위기, 숙제 미완료 시 노래 벌칙 등 동기부여"},
+
+ {school:"산본고",grade:"고2",headline:"문과 강세 학교, 등급 따기 어려움",
+  tags:["문학 100%","객22","모의고사 연계↑"],diff:"평이(but 등급 어려움)",
+  sessions:[["수 17-20","은규",7,15,"-"],["일 19-22","은규",15,20,"-"]],
+  structure:["총 22문항 · 객관식 22 (서술형 X)","문학 100% · 모의고사 연계율 높음","범위 ① 고재종·윤동주 / 나희덕·김소월 산유화·이조년·백석","범위 ② 김시습 이생규장전 · 시조 4편 · 이강백 북어대가리","유인물 장석남·이형기 낙화·김기택 멸치","모의고사 고2 2603 도깨비 잔치"],
+  disc:["적은 문제·큰 배점·쉬운 시험, 한 문제가 등급을 가른다","문과 강세라 등급 경쟁 치열"],
+  strat:["고전문학 외부지문 대비(비내신기간)"],
+  score:"1컷 94.7 / 2컷 77 / 3컷 58.6. 20~30점 이상 상승 다수, 90점대 다수",
+  feat:"산본고 출신 조교쌤·친구들과 재미있는 수업"},
+
+ {school:"수리고",grade:"고2",headline:"다수 외부지문, 그래도 상위권 등급컷 유지",
+  tags:["문학 100%","객24","갈래복합","외부지문 多"],diff:"중하위권 체감↑",
+  sessions:[["수 19-22","지연",1,15,"미래엔"],["일 19-22","지연",14,15,"미래엔"]],
+  structure:["총 24문항 · 객관식 24 (서술형 X)","문학 100% · 갈래복합 + 다수 외부지문","현대 ① 천양희·한흑구 보리·서안나·이육사 꽃·조지훈 낙화·서유미 스노우맨","고전 ② 이규보 이옥설·김시습 만복사저포기·황조가·공무도하가·찬기파랑가·서경별곡·상춘곡","유인물 이개 · 홍랑"],
+  disc:["다수의 외부지문(중하위권 체감 난이도↑)","상위권 등급컷은 그대로 유지"],
+  strat:["다양한 문제로 낯선 외부지문 대비","비내신기간 모의고사로 수시·정시 동시 대비"],
+  score:"71→92.2, 70→95.3, 50→75.4 대폭 상승(1명만 2점 하락)",
+  feat:"대부분 1학년보다 2학년 1차 성적 크게 상승"},
+
+ {school:"용호고",grade:"고2",headline:"문학 1차 등급컷 높은 편",
+  tags:["문학 100%","객26","외부지문 多"],diff:"평이",
+  sessions:[["일 12-15","은규",8,15,"비상(강)"]],
+  structure:["총 26문항 · 객관식 26 (서술형 X)","문학 100%","범위 고재종·윤동주·김수영 사령·나희덕·김소월 산유화·이조년","김시습 이생규장전·운영전·이희승·박목월·정희성","유인물 장석남·김수영·백석 남신의주","모의고사 이동순·이문재·박인로·박세당·김학공전"],
+  disc:["매년 문학 1차 등급컷 높음","외부지문 많아도 범위 지문만으로 풀 수 있게 출제","2차고사는 고전문학이라 등급컷 하락 가능"],
+  strat:["범위 지문 기반 학습 + 모의고사 집중"],
+  score:"1개 틀린 학생 2명, 나머지 80점대",
+  feat:"서로 자극 주고받는 반"},
+
+ {school:"흥진고",grade:"고2",headline:"주관식 첫 등장으로 긴장감 상승",
+  tags:["문학 단독","객21+논술3","서술형 신규"],diff:"전반 무난",
+  sessions:[["일 10-13","은규",8,15,"비상(강)"]],
+  structure:["총 24문항 · 객관식 21 + 논술형 3","문학 단독","범위 ① 고재종 / 윤동주 / 백석 흰바람벽","범위 ② 김시습 이생규장전·김애란 도도한생활·장항준 리바운드","범위 ③ 박목월·정희성 / 공무도하가·제가야산독서당"],
+  disc:["주관식 첫 등장으로 긴장감↑","서술형은 교과서 학습활동 수준(채점 널널), 학원서 매주 연습"],
+  strat:["서술형 매주 연습 + 매 범위 깊이 학습"],
+  score:"기존 2~3등급대 중 반 1등 배출, 20점 이상 상승 다수",
+  feat:"일요일 오전 수업(주말 아침 알차게)"},
+
+ {school:"수원외고",grade:"고2",headline:"시험범위 적고 수행평가 특이",
+  tags:["매우 평이","90점대 예상"],diff:"매우 평이",
+  sessions:[["일 17-20","은규",4,15,"-"]],
+  structure:["시험 매우 평이","등급컷 90점대 예상","시험범위 적음"],
+  disc:["수행평가가 특이한 것이 많아 수행평가 주의 필요"],
+  strat:["수행평가 밀착 관리"],
+  score:"등급컷 90점대 예상",
+  feat:"—"},
+
+ // ── 중등 (시트 기준) ──
+ {school:"궁내·용호",grade:"중등",sub:"중2",headline:"비내신엔 현대문법, 내신 집중 대비",
+  tags:["중2","해솔T"],diff:"용호 객관식 난이도↑",
+  sessions:[["월 17-20","해솔",null,null,"미래엔(민/신)"]],
+  structure:["중2 대상","궁내중 시험 없음 / 용호중 객관식 난이도 ↑","비내신 현대문법","매회차 프린트물 추가 과제"],
+  disc:["용호중 객관식 난이도 높음"],strat:["비내신 현대문법","매회차 프린트물 추가 과제"],score:"—",feat:"정원 2명"},
+
+ {school:"산본·용호·당동",grade:"중등",sub:"중2",headline:"비내신 현대문법 + 내신대비 4주",
+  tags:["중2","해솔T"],diff:"서술형·문학개념어 적용 어려움",
+  sessions:[["토 14-17","해솔",null,null,"천재(노)·미래엔(신)"]],
+  structure:["중2 대상","서술형·문학개념어 적용 어려움","비내신 현대문법 + 내신대비 4주","용호중은 대비 기간 더 길게"],
+  disc:["서술형·문학개념어 적용 어려움","용호중은 내신대비 기간 더 필요"],strat:["비내신 현대문법","내신대비 4주"],score:"—",feat:"정원 4명"},
+
+ {school:"산본·당동·궁내",grade:"중등",sub:"중3",headline:"외부지문·문학개념어 수업 필요",
+  tags:["중3"],diff:"외부지문·서술형 어려움",
+  sessions:[["토 10-13","(미정)",null,null,"천재(박)·미래엔(신)"]],
+  structure:["중3 대상","외부지문·서술형 문제 어려움","비내신 현대문법 + 내신대비 4주","외부지문·문학개념어 수업 필요","주 60문제 수준"],
+  disc:["외부지문 출제 시 어려움","서술형 문제 어려움"],strat:["비내신 현대문법","내신대비 4주","외부지문·개념어 수업"],score:"—",feat:"정원 3명"},
+
+ // ── 고3 ──
+ {school:"금요/토요 정규반",grade:"고3",headline:"수능 대비 + 학교별 내신 클리닉 별도 운영",
+  tags:["가경T 원장","수능 대비"],diff:"-",
+  sessions:[["금 19-22","가경",null,45,"수능특강·수수활·사설"],["토 09-12","가경",null,45,"수능특강·수수활·사설"]],
+  structure:["기본 수능 대비 커리큘럼","학교별 내신 = 별도 클리닉 운영","시험범위 전 영상강의 + 학교별 교재 제작","클리닉 (금) 17:00-18:30 / (토) 12:30-16:00"],
+  disc:["수능 중심 + 학교별 내신 클리닉 병행"],
+  strat:["수수활(자체 제작)·사설 컨텐츠 활용","학교별 맞춤 클리닉"],
+  score:"-",
+  feat:"원장 직강",
+  link:"https://oreum1222.github.io/oreum-3/"}
+];
+
+const FIT=[
+ {t:"Type A. 성실 / 노력형",sch:"군포고 · 흥진고",desc:'"성실함과 엉덩이로 승부하는 노력파"',
+  li:["양이 많아도 계획적으로 끝까지 읽어냄","교과서·자습서 세세한 내용(날개·학습활동)까지","암기 위주 시험에서 기복 없음","복잡한 문법 규칙 암기 거부감 적음"],
+  tip:"범위 압도적인 학교에서 유리. 단 '낯선 지문' 공포 줄이기 병행."},
+ {t:"Type B. 언어 / 감각형",sch:"수리고 · 산본고",desc:'"언어 감각과 논리력이 뛰어난 전략가"',
+  li:["공부량 대비 모의고사 점수 잘 나옴","처음 보는 시·소설도 핵심 주제 파악","단순 암기보다 '왜?' 원리 이해형","한 문제에 깊이 고민하는 스타일"],
+  tip:"외부지문 비중 높고 고난도 문법 학교 유리. 단 배점 큰 학교 실수 주의."}
+];
+const FITROWS=[
+ ["속도 느린 완벽주의자","군포고 타임어택","시간제한 풀이·1페이지 건너뛰기"],
+ ["암기 싫어하는 감각파","산본고 암기형 출제","교과서 꼼꼼·유인물 암기"],
+ ["멘탈 약한 유리심장","수리고 높은 배점 압박","고난도 외부지문 적응 훈련"],
+ ["뒷심 부족","군포·산본·흥진 2학기 폭탄","여름방학 선행 학습"],
+ ["꼼꼼함 부족","중앙·산본 수행평가 감점","수행평가 가이드라인 준수 관리"]
+];
+const AVG=[["군포고","67.6","80.9","69.0"],["산본고","81.1","79.6","87.1"],["수리고","86.4","87.6","88.0"],["군포중앙고","-","84.2","-"],["용호고","-","81.0","-"],["수원외고","-","-","87.1"]];
+
+const MIDCURRI=[
+ ["3월","비내신","문학/문법 기초 다지기","현대시·현대소설 감상 원리, 중등 필수 문법","x"],
+ ["4월","내신","학교별 내신 집중 대비","교과서 작품 정밀 분석, 수행평가·기출","i"],
+ ["5월","비내신","문학/문법 기초 다지기","현대시·현대소설 감상 원리, 중등 필수 문법","x"],
+ ["6월","내신","학교별 내신 집중 대비","교과서 작품 정밀 분석, 수행평가·기출","i"],
+ ["7월","여름학기","여름 집중 과정","심화 국어 입문, 고전 문학 입문","s"],
+ ["8월","여름학기","여름 집중 과정","심화 국어 입문, 고전 문학 입문","s"],
+ ["9월","내신","학교별 내신 집중 대비","교과서 작품 정밀 분석, 수행평가·기출","i"],
+ ["10월","비내신","문학/문법 기초 다지기","현대시·현대소설 감상 원리, 중등 필수 문법","x"],
+ ["11월","내신","학교별 내신 집중 대비","교과서 작품 정밀 분석, 수행평가·기출","i"],
+ ["12월","비내신","겨울방학 전과정","심화 국어 학습, 겨울방학 국어 학습 전략","x"]
+];
+const HI1CURRI=[
+ ["5월","학평+기말 준비 (6월 학평 대비, 기말 문법 기본기)"],
+ ["6월","기말고사 대비 (내신 집중 완성)"],
+ ["7~8월","여름방학 특강 (수능 개념, 독해 뼈대)"],
+ ["9월","중간고사 대비 (2학기 첫 내신 완성)"],
+ ["10월","11월 학평 대비 (수능 모의고사 집중)"],
+ ["11월","기말고사 대비 (내신 마지막 승부수)"],
+ ["12월","학년 마무리 (기말 마무리, 고2 진학 준비)"],
+ ["2027.1월","고2 진학 + 예비고2 과정 시작"]
+];
+
+/* ===== RENDER ===== */
+const $=s=>document.querySelector(s), ce=t=>document.createElement(t);
+function seatTag(cur,max){
+  if(cur===null) return `<span class="seat full">정원 ${max||''}</span>`.replace('정원 ','정원 ');
+  const left=max-cur;
+  let cls= left<=0?'full': left<=2?'low':'';
+  let txt= left<=0?'마감': `여석 ${left}`;
+  return `<span class="seat ${cls}">${txt} <span style="opacity:.6;font-weight:500">(${cur}/${max})</span></span>`;
+}
+function cardHTML(c){
+  const sess=c.sessions.map(s=>{
+    const seat = s[2]===null && s[3]!==null ? `<span class="seat full">정원 ${s[3]}</span>`
+               : s[2]===null ? `<span class="seat">상담 문의</span>`
+               : seatTag(s[2],s[3]);
+    return `<div class="sess"><span class="t">${s[0]}</span><span class="who"><span class="tn">${s[1]}T</span> · ${s[4]}</span>${seat}</div>`;
+  }).join('');
+  const notes = c.notes ? `<div class="desk-only"><div class="desk-box"><h4>🔴 학생 개별 메모 (실장 전용)</h4><ul>${c.notes.map(n=>`<li>${n}</li>`).join('')}</ul><div class="desk-hint">학부모 대면 화면에서는 자동 숨김</div></div></div>`:'';
+  const link = c.link ? `<a class="linkbtn" href="${c.link}" target="_blank" rel="noopener">고3 정규반 자세히 보기 ↗</a>`:'';
+  return `<div class="card">
+    <div>
+      <div class="card-head"><span class="name">${c.school}</span><span class="gradebadge">${c.sub||c.grade}</span></div>
+      <div class="headline">${c.headline}</div>
+    </div>
+    <div class="tags">${(c.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}<span class="tag diff">난이도 · ${c.diff}</span></div>
+    <div class="sessions">${sess}</div>
+    <div class="sec"><h4>출제 구조 / 범위</h4><ul>${c.structure.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+    ${c.disc&&c.disc.length?`<div class="sec"><h4>변별 포인트</h4><ul>${c.disc.map(d=>`<li>${d}</li>`).join('')}</ul></div>`:''}
+    ${c.strat&&c.strat.length?`<div class="sec"><h4>[오름] 대비 전략</h4><ul>${c.strat.map(d=>`<li>${d}</li>`).join('')}</ul></div>`:''}
+    <div class="sec"><h4>성적 사례 / 반 특징</h4><p class="kv"><span class="score">${c.score}</span><br>${c.feat}</p></div>
+    ${link}
+    ${notes}
+  </div>`;
+}
+
+let curGrade="all", curQ="";
+function render(){
+  const q=curQ.trim().toLowerCase();
+  const list=CARDS.filter(c=>{
+    const gOK = curGrade==="all" || c.grade===curGrade;
+    if(!gOK) return false;
+    if(!q) return true;
+    const hay=(c.school+" "+c.grade+(c.sub||"")+" "+c.headline+" "+c.sessions.map(s=>s[0]+s[1]).join(" ")).toLowerCase();
+    return hay.includes(q) || q.split(/\s+/).every(w=>hay.includes(w));
+  });
+  $("#cards").innerHTML=list.map(cardHTML).join('');
+  $("#empty").style.display=list.length?"none":"block";
+  $("#count").innerHTML=`<b>${list.length}</b>개 강좌`;
+}
+
+/* timetable grouped by grade */
+function renderTime(){
+  const order=["중등","고1","고2","고3"];
+  const wrap=$("#timeTables"); wrap.innerHTML="";
+  let cols="";
+  order.forEach(g=>{
+    const inGrade=CARDS.filter(c=>c.grade===g);
+    if(!inGrade.length) return;
+    const cards=inGrade.map(c=>{
+      const rows=c.sessions.map(s=>{
+        let seat;
+        if(s[2]===null && s[3]!==null) seat=`<span class="seat full">정원 ${s[3]}</span>`;
+        else if(s[2]===null) seat=`<span class="seat">문의</span>`;
+        else{const left=s[3]-s[2];const cls=left<=0?'full':left<=2?'low':'';
+          seat=`<span class="seat ${cls}">${left<=0?'마감':'여석 '+left}<span class="frac">${s[2]}/${s[3]}</span></span>`;}
+        return `<div class="tt-row"><div class="r1"><span class="d">${s[0]}</span>${seat}</div><div class="r2"><span class="tch">${s[1]}T</span><span class="sep">·</span><span class="bk">${s[4]}</span></div></div>`;
+      }).join('');
+      return `<div class="tt-card"><div class="tt-h"><span class="sname">${c.school}</span><span class="gradebadge">${c.sub||c.grade}</span></div>${rows}</div>`;
+    }).join('');
+    const seatTotal=inGrade.reduce((a,c)=>a+c.sessions.length,0);
+    cols+=`<div class="tt-col"><h3 class="tt-title">${g}<span class="n">${inGrade.length}반</span></h3>${cards}</div>`;
+  });
+  wrap.innerHTML=`<div class="tt-board">${cols}</div>`;
+}
+function renderFit(){
+  $("#fitCards").innerHTML=FIT.map(f=>`<div class="card"><div class="card-head"><span class="name" style="font-size:16px">${f.t}</span></div>
+    <div class="headline">유리 학교 · ${f.sch}</div><p class="kv" style="font-style:italic;color:var(--muted)">${f.desc}</p>
+    <div class="sec"><ul>${f.li.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+    <div class="sec"><h4>전략</h4><p>${f.tip}</p></div></div>`).join('');
+  $("#fitTable").innerHTML=FITROWS.map(r=>`<tr><td><b>${r[0]}</b></td><td style="color:var(--warn)">${r[1]}</td><td>${r[2]}</td></tr>`).join('');
+  $("#avgTable").innerHTML=AVG.map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('');
+}
+function renderCurri(){
+  $("#sysList").innerHTML=SYS.map(s=>`<li>${s}</li>`).join('');
+  const mc={x:'var(--muted)',i:'var(--accent)',s:'var(--warn)'};
+  $("#midCurri").innerHTML=MIDCURRI.map(r=>`<tr><td><b>${r[0]}</b></td><td><span style="color:${mc[r[4]]};font-weight:700">●</span> ${r[1]}</td><td>${r[2]}</td><td style="color:var(--muted)">${r[3]}</td></tr>`).join('');
+  $("#hi1Curri").innerHTML=HI1CURRI.map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td></tr>`).join('');
+}
+
+/* ===== EVENTS ===== */
+$("#q").addEventListener("input",e=>{curQ=e.target.value;render();});
+$("#gradeChips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;
+  document.querySelectorAll("#gradeChips .chip").forEach(x=>x.classList.remove("on"));b.classList.add("on");curGrade=b.dataset.g;render();});
+$("#tabs").addEventListener("click",e=>{const b=e.target.closest(".tab");if(!b)return;
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));$("#"+b.dataset.tab).classList.add("active");
+  window.scrollTo({top:0,behavior:"smooth"});});
+
+/* desk mode + PIN */
+const pin=$("#pin"),pinInput=$("#pinInput"),pinErr=$("#pinErr");
+function setDesk(on){document.body.classList.toggle("desk-on",on);
+  $("#deskLabel").textContent=on?"실장 모드 ON · 끄기":"실장 전용 보기";}
+$("#deskBtn").addEventListener("click",()=>{
+  if(document.body.classList.contains("desk-on")){setDesk(false);return;}
+  pin.classList.add("on");pinInput.value="";pinErr.textContent="";setTimeout(()=>pinInput.focus(),50);
+});
+async function tryPin(){
+  if(pinInput.value!==DESK_PIN){pinErr.textContent="PIN이 올바르지 않습니다";pinInput.value="";pinInput.focus();return;}
+  pin.classList.remove("on");
+  // 시트 연동 시: PIN을 서버에 보내 학생메모 포함 데이터 받아오기
+  if(WEBAPP_URL){
+    try{
+      const sep=WEBAPP_URL.includes("?")?"&":"?";
+      const r=await fetch(WEBAPP_URL+sep+"pin="+encodeURIComponent(DESK_PIN));
+      const j=await r.json();
+      if(j&&j.cards&&j.cards.length){CARDS=j.cards;render();}
+    }catch(e){console.warn("실장 데이터 로드 실패",e);}
+  }
+  setDesk(true);
+}
+$("#pinOk").addEventListener("click",tryPin);
+$("#pinCancel").addEventListener("click",()=>pin.classList.remove("on"));
+pinInput.addEventListener("keydown",e=>{if(e.key==="Enter")tryPin();if(e.key==="Escape")pin.classList.remove("on");});
+pin.addEventListener("click",e=>{if(e.target===pin)pin.classList.remove("on");});
+
+/* init */
+function renderAll(){render();renderTime();renderFit();renderCurri();}
+async function boot(){
+  if(WEBAPP_URL){
+    try{
+      const r=await fetch(WEBAPP_URL);
+      const j=await r.json();
+      if(j&&j.cards&&j.cards.length){CARDS=j.cards;}
+    }catch(e){console.warn("시트 연동 실패 — 내장 데이터 사용",e);}
+  }
+  renderAll();
+}
+boot();
+</script>
+</body>
+</html>
