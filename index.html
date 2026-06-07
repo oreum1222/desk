@@ -189,6 +189,25 @@ td .seat{font-weight:700}
   padding:14px 16px;font-size:13px;color:#cfe0d5;margin-bottom:18px}
 .sub{font-size:13px;color:var(--muted);margin:-6px 0 18px}
 
+/* ── 진단 결과 해설 ── */
+.assess-bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.ax-cat{margin-bottom:22px}
+.ax-cat-h{font-size:14px;font-weight:800;color:var(--accent);margin:0 0 11px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding-bottom:9px;border-bottom:1px solid var(--border-strong)}
+.ax-cat-h span{font-size:12px;font-weight:500;color:var(--muted)}
+.ax-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(335px,1fr));gap:12px}
+.ax{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:14px 16px;transition:.18s}
+.ax:hover{border-color:var(--border-strong)}
+.ax.r-axis{border-left:3px solid var(--danger)}
+.ax-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.ax-name{font-size:15px;font-weight:800;letter-spacing:-.2px}
+.ax-code{font-size:10.5px;color:var(--muted-2);letter-spacing:.5px;font-weight:600}
+.ax-q{font-size:10.5px;color:var(--accent);background:var(--accent-soft);border:1px solid var(--border-strong);padding:2px 7px;border-radius:6px;margin-left:auto;white-space:nowrap}
+.ax-r{font-size:10px;font-weight:700;color:var(--danger);background:var(--danger-soft);border:1px solid rgba(224,138,138,.3);padding:2px 7px;border-radius:6px;white-space:nowrap}
+.ax-mean{font-size:13.3px;color:#EAF0EC;line-height:1.65;margin:0 0 9px}
+.ax-rx{font-size:12.8px;color:#cfe0d5;line-height:1.6;margin:0;background:var(--accent-soft);border-radius:8px;padding:9px 11px}
+.ax-rx b{color:var(--accent);margin-right:5px}
+.ax-empty{text-align:center;color:var(--muted);padding:40px 0}
+
 /* curriculum legend */
 .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-bottom:14px}
 .legend span{display:inline-flex;align-items:center;gap:6px}
@@ -241,7 +260,7 @@ footer b{color:var(--text)}
 <nav class="tabs"><div class="wrap tabs-in" id="tabs">
   <button class="tab active" data-tab="schools">학교별 상담</button>
   <button class="tab" data-tab="time">시간표 · 여석</button>
-  <button class="tab" data-tab="fit">성향 진단</button>
+  <button class="tab" data-tab="fit">진단 결과 해설</button>
   <button class="tab" data-tab="curri">운영 · 커리큘럼</button>
 </div></nav>
 
@@ -275,7 +294,20 @@ footer b{color:var(--text)}
 
   <!-- ░░ 성향 진단 ░░ -->
   <section class="panel" id="fit">
-    <p class="sub">상담 클로징용 — "우리 아이 성향"을 짚고 유리한 학교/관리 포인트로 연결하세요.</p>
+    <p class="sub">신규생 <b style="color:var(--accent)">국어 학습 성향 정밀 진단</b> 결과 해설용 — 학생 리포트의 강점·약점 진단축을 검색해 의미와 처방을 안내하세요.</p>
+    <div class="assess-bar">
+      <a class="linkbtn" href="https://oreum1222.github.io/oreum-fassessment/" target="_blank" rel="noopener">진단 도구 열기 · 신규생 진단 실시 ↗</a>
+      <div class="search" style="flex:1;min-width:220px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="axq" placeholder="진단축 검색 (예: 거시구조, 근거 찾기, 메타인지, 단권화)" />
+      </div>
+    </div>
+    <div class="note">🔴 <b style="color:var(--danger)">R 표시</b> 진단축은 역방향 — <b>점수가 높을수록 약점</b> 신호입니다. 리포트에서 R축이 높으면 우선 처방 대상.</div>
+    <div id="assessGuide"></div>
+    <div class="ax-empty" id="axEmpty" style="display:none">검색 결과가 없습니다.</div>
+
+    <h3 style="margin:34px 0 6px;font-size:15px;font-weight:800;color:var(--muted)">참고 · 성향별 학교 매칭 (설명회 자료)</h3>
+    <p class="sub" style="margin:4px 0 16px">진단과 별개로, 학교 선택 상담 시 활용하는 성향 매칭입니다.</p>
     <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(330px,1fr))" id="fitCards"></div>
     <div class="tablecard" style="margin-top:20px">
       <div class="th">성향별 주의 체크 <span class="pin">— 학부모 공감 포인트</span></div>
@@ -504,6 +536,107 @@ let CARDS = [
   link:"https://oreum1222.github.io/oreum-3/"}
 ];
 
+/* ===== 국어 학습 성향 정밀 진단 — 진단축 해설 (가경T 설계) ===== */
+const ASSESS=[
+ {cat:"1. 메타인지",desc:"자기 학습을 자각하는 능력",axes:[
+  {n:"메타인지",c:"METACOGNITION",q:"A8·A11",r:false,m:`내가 어디까지 알고, 어디부터 모르는지를 구분하는 힘. 모든 학습의 출발점이다. 메타인지가 약한 학생은 공부량을 늘려도 같은 자리에서 맴돈다. "다 안다"고 착각하기 때문이다.`,x:`하루 한 문제만이라도 "왜 맞았는지/왜 틀렸는지"를 한 줄로 적게 한다. 정답보다 자기 사고를 언어화하는 것이 우선.`},
+  {n:"시험 메타인지",c:"EXAM-META",q:"E12",r:false,m:`"이 부분은 시험에 나오겠다"고 수업 중에 예측하는 능력. 내신에서 직접 점수를 가르는 축. 같은 수업을 들어도 정보 우선순위가 다르다.`,x:`교과서·프린트의 "강조 표시" 위치를 의식하게 한다. 선생님의 농담·반복 어구·예시가 어디서 나왔는지 매 수업 표시 훈련.`},
+  {n:"수업↔문제 연결력",c:"CLASS-TO-Q",q:"E13",r:false,m:`필기 내용과 시험 선지가 어떻게 이어지는지 의식하는 힘. 수업은 듣지만 연결 못 하면 "수업 따로, 시험 따로"가 된다. 내신의 핵심 회로.`,x:`기출 한 문제씩 "이 선지는 수업 어느 부분과 이어지는지" 짚게 한다. 처음엔 교사 시범, 점차 학생 스스로.`},
+  {n:"영역 강점 인식",c:"SELF-DOMAIN",q:"H6",r:false,m:`자신 있는 영역(문학/독서/문법/화작)을 스스로 아는가. "국어를 못한다"가 아니라 "문학은 되는데 독서가 약하다"로 말하는 학생은 회복이 빠르다.`,x:`최근 모의고사를 영역별 정답률 표로 만들게 한다. 막연한 "국어 약함"을 "비문학 사회 약함"으로 옮기는 작업.`},
+  {n:"오답 메타인지",c:"ERROR-META",q:"F16",r:false,m:`오답 정리 시 "내가 처음 그 답을 고른 이유"까지 적는가. 진짜 오답노트와 가짜 오답노트를 가르는 결정적 축. 정답만 적는 건 무의미.`,x:`오답노트 4칸: ① 내 답 ② 고른 이유 ③ 정답 ④ 정답 근거. 네 칸을 모두 채워야 1개로 인정.`},
+  {n:"사고과정 비교",c:"PROCESS-CMP",q:"F17",r:false,m:`해설을 읽을 때 정답 확인에 그치지 않고 내 사고 흐름과 비교하는가. 오답 메타인지의 윗 단계.`,x:`해설 보기 전 "내가 어떻게 풀었는지" 먼저 적게 한다. 그다음 해설과 한 문장씩 비교 — "여기서 갈렸다" 표시.`},
+  {n:"시험 후 분석",c:"POST-EXAM",q:"G9",r:false,m:`시험 후 시간 운영 실패 원인을 되짚는가. 시험마다 메타인지가 자라는 학생과 아닌 학생은 6개월 후 격차가 명확.`,x:`시험 직후 24시간 내 "어느 영역에서 시간이 오래 걸렸나" 한 줄, "다음에 바꿀 것" 한 줄, 두 줄만.`}
+ ]},
+ {cat:"2. 동기·정서·마인드셋",desc:"학습 이전의 토대",axes:[
+  {n:"성장 마인드셋",c:"GROWTH",q:"H1",r:false,m:`"국어 성적은 노력으로 충분히 오른다"고 믿는가. 이 믿음이 없으면 어떤 처방도 작동 안 한다. 가장 먼저 회복시킬 축.`,x:`처방 이전에 "작은 성공"부터. 주 단위 작은 목표(어휘 20개, 비문학 1지문) 설정·달성 기록.`},
+  {n:"고정 마인드셋",c:"FIXED",q:"H2",r:true,m:`"국어는 재능 있는 학생만 잘한다"는 믿음. 강하면 노력과 점수가 분리된다. 안 오를 때마다 "역시 나는 안 돼"로 귀결.`,x:`재능보다 방법론 강조. 같은 점수대에서 1년 안에 등급 오른 학생들의 구체적 사례를 보여준다.`},
+  {n:"자기효능감",c:"SELF-EFFICACY",q:"H3·H5",r:false,m:`"꾸준히 하면 좋아진다"는 자신에 대한 신뢰. 마인드셋이 일반론이라면 자기효능감은 "나에게 적용된 마인드셋".`,x:`목표를 작게 자르고 달성마다 명시적 강화. 월 회고에서 "전과 달라진 점" 한 가지를 학생이 직접 말하게.`},
+  {n:"방법론 무력감",c:"METHOD-HELPLESS",q:"H4",r:true,m:`"국어는 공부 방법 잡기 어렵다"는 인식. 의지는 있지만 "어떻게 할지 모르겠다"는 상태. "더 열심히"는 무의미.`,x:`방법론을 시각화. 영역별 루틴을 한 장 표로. "공부해라" 대신 "월요일 비문학 1지문+오답분석 30분".`},
+  {n:"학습된 무력감",c:"LEARNED-HELPLESS",q:"B11·B12",r:true,m:`"숙제해도 느는지 몰라 대충 하게 된다"는 상태. 노력을 시도했으나 효과를 체감 못 함. 가장 위험한 축.`,x:`공부량이 아니라 효과를 가시화. 주 단위로 "이번 주 늘어난 것" 한 가지(예: 어휘 5개)를 직접 말하게.`},
+  {n:"학습목표지향",c:"MASTERY-GOAL",q:"A1",r:false,m:`"점수보다 진짜 이해했는가"가 중요하다는 태도. 점수만 보는 학생은 단기 성과는 좋아도 깊이가 안 쌓인다.`,x:`단원별 핵심 개념 3개를 학생 입으로 설명하게. 점수와 별개로 이해 자체에 가치를 부여.`},
+  {n:"내재동기",c:"INTRINSIC",q:"A5·D1·D7",r:false,m:`점수와 무관하게 글 읽기·국어 자체를 즐기는 정서. 가장 안정적인 동력. 슬럼프에서도 회복이 빠르다.`,x:`흥미 보이는 작품·주제를 추천 도서로 연결. 시험과 무관한 독서 시간을 의식적으로 보호.`},
+  {n:"외재동기",c:"EXTRINSIC",q:"A12·D9",r:true,m:`"시험에 안 나오면 안 한다", "등급/점수만 본다"는 태도. 단기 효율은 좋지만 천장이 빨리 온다.`,x:`시험 외 독서·글쓰기를 작게 끼워 넣는다. "시험에 안 나오는 글"을 주 1회는 만나게.`},
+  {n:"자기주도성",c:"SELF-DIRECTED",q:"A2·A10",r:false,m:`시키지 않아도 공부하는 힘, 답지 보기 전 끝까지 풀어보는 힘. 학원 의존이 높을수록 더 중요.`,x:`"답지 30분 봉인" 룰. 30분 혼자 풀고 답지. 풀이 시간이 아니라 사고 지속 시간을 늘린다.`},
+  {n:"시험 불안",c:"TEST-ANXIETY",q:"G1",r:true,m:`시험 직전 손 떨림·머리 하얘짐. 실력보다 시험 운영이 점수를 깎는 케이스. 평소 점수와 시험 점수 격차가 크다.`,x:`실전과 같은 시간·환경 노출을 늘린다. 결과보다 운영 루틴(호흡·페이스)에 초점.`},
+  {n:"회복탄력성",c:"RESILIENCE",q:"G2·G3",r:false,m:`한 문제에 막혀도 뒤를 무너뜨리지 않는 힘, 점수 안 나와도 빨리 회복하는 힘. 시험 운영의 절반.`,x:`"막힘 표시 후 넘기기" 루틴 훈련. 모의고사 분석에서 "막혔던 순간" 이후 회복 과정을 기록.`},
+  {n:"감 의존",c:"INTUITION-RELIANCE",q:"D10",r:true,m:`"국어는 결국 감으로 푼다"는 믿음. 점수 오를수록 정체가 빨리 온다. 근거 기반 전환이 시급한 신호.`,x:`모든 정답에 "지문의 어느 줄이 근거인가"를 적게. 처음엔 느려도 한 달이면 패턴이 잡힌다.`},
+  {n:"독서·작문 정서",c:"READ-WRITE-AFFECT",q:"D1·D2",r:false,m:`"책 읽기가 즐겁다", "글쓰기가 두렵지 않다"는 정서적 친화. 장기 학습 곡선에 가장 큰 영향.`,x:`짧은 글(에세이·칼럼)부터. 양보다 빈도, 빈도보다 즐거움.`},
+  {n:"문자 친화·어휘 능동성",c:"TEXT-ACTIVE",q:"D3·D4",r:false,m:`영상보다 글로 정보 얻는 게 편한가, 모르는 단어를 능동적으로 찾는가. 모든 독해의 토양.`,x:`영상 시간을 줄이기보다 글 콘텐츠 노출을 늘린다. 짧은 글 → 긴 글 순서.`},
+  {n:"지문 인내",c:"TEXT-ENDURANCE",q:"D8",r:true,m:`국어 지문을 읽을 때 쉽게 지루함을 느끼는가. 독해력 이전의 문제. 인내가 부족하면 어떤 처방도 끝까지 못 간다.`,x:`지문 길이를 점진적으로. 짧은 칼럼 → 1500자 → 2000자 → 모의고사 길이까지.`}
+ ]},
+ {cat:"3. 학습 행동·습관",desc:"매일의 루틴이 되는 진단축",axes:[
+  {n:"계획성",c:"PLANNING",q:"A3·A7",r:false,m:`계획을 세우고 지키는가, 전날 벼락치기가 잦은가. 누적형 과목인 국어에서 약하면 매번 제자리로.`,x:`한 달 대계획보다 일주일 단위로. 일요일 저녁 30분, 다음 주 7일치 학습 계획표 루틴.`},
+  {n:"심층학습",c:"DEEP-LEARNING",q:"A4·A6",r:false,m:`"친구에게 설명할 수준까지" 공부하는가. 표면 학습은 양은 많아도 변형에 약하다. 심층학습은 응용에서 살아남는다.`,x:`단원별 개념 하나를 교사 입장에서 설명하게. 막히는 지점이 곧 표면학습의 경계선.`},
+  {n:"오답분석·정리",c:"ERROR-ANALYSIS",q:"A9·B3",r:false,m:`틀린 문제 분석 시간이 새 문제보다 긴가, 오답을 따로 정리하는가. 점수 상승의 거의 모든 비밀이 여기.`,x:`"새 문제 1 : 오답 분석 1.5" 비율 강제. 처음엔 답답해해도 한 달이면 효과.`},
+  {n:"집중지속력",c:"FOCUS-DURATION",q:"B1",r:false,m:`한 번에 50분 이상 집중하는가. 수능 80분을 견디려면 평소 90~120분 집중 훈련 필요.`,x:`25분→50분→90분 점진적. 타이머를 시각화해 "쪼개진 시간"을 경험하게.`},
+  {n:"집중환경",c:"FOCUS-ENV",q:"B2·B10",r:false,m:`핸드폰 차단하고 공부하는가, 음악 없이 집중하는가. 환경이 곧 집중력. 환경 통제 못 하면 시간만 늘고 효율은 안 오른다.`,x:`학원은 핸드폰 보관함 의무화. 집은 공부 30분 전 알람 차단 루틴.`},
+  {n:"반복학습",c:"REPETITION",q:"B4",r:true,m:`"같은 지문 다시 읽기는 시간 낭비"라는 인식. 효율 같지만 깊이를 거부하는 태도. 지문은 두 번째에 새로 보인다.`,x:`"한 지문 두 번 읽기" 룰. 첫 읽기는 흐름, 두 번째는 구조와 근거.`},
+  {n:"수업집중",c:"CLASS-FOCUS",q:"B5",r:false,m:`수업 중 졸거나 딴짓이 없는가. 내신 점수의 가장 직접적인 변수. 같은 수업도 흡수율이 다르다.`,x:`수업 직전 짧은 운동, 수면 점검. 환경 변수를 먼저 다듬는다.`},
+  {n:"능동적 필기",c:"ACTIVE-NOTE",q:"B6",r:false,m:`받아 적기보다 자기 말로 바꿔 적는가. 받아쓰기는 기록일 뿐. 자기 언어로 변환하는 순간 학습이 일어난다.`,x:`단원 끝마다 5분, "이 단원을 한 문장으로" 빈칸 채우기. 곧 습관이 된다.`},
+  {n:"복습루틴",c:"REVIEW-ROUTINE",q:"B7",r:false,m:`주 1회 이상 정해진 복습 시간이 있는가. 복습은 의지가 아니라 시간표. "시간 나면 복습"은 영원히 안 일어난다.`,x:`매주 일요일 오전 90분을 "복습 시간"으로 고정. 책 펼치는 것까지가 첫 단계.`},
+  {n:"정독",c:"SLOW-READING",q:"B8·E6",r:true,m:`인강 1.5배속 습관, 교과서를 끝까지 정독한 적 없는 상태. 효율 신화에 갇혀 깊이를 잃는 패턴.`,x:`한 학기 한 권 정독 도서를 정한다. 시험 범위와 무관한, "시간을 들이는" 독서.`},
+  {n:"어휘 즉시처리",c:"VOCAB-INSTANT",q:"B9·D4",r:false,m:`모르는 단어를 그 자리에서 찾는가. "나중에 찾아야지"는 거의 안 일어난다. 어휘력은 즉시처리 습관에서 자란다.`,x:`책상에 사전(앱·종이) 상시 비치. 한 지문당 모르는 단어 3개 이상 표시 후 즉시 검색.`},
+  {n:"학습 의식성",c:"CONSCIOUS",q:"G10",r:false,m:`같은 실수를 반복 않으려 의식적으로 노력하는가. 메타인지의 행동 버전. 약점을 알고 의식적으로 교정.`,x:`매주 "이번 주 의식할 것" 하나를 학생이 직접 선언. 일주일 후 점검.`}
+ ]},
+ {cat:"4. 독해·문해력",desc:"텍스트를 읽어내는 정밀한 회로",axes:[
+  {n:"요약력",c:"SUMMARY",q:"C9",r:false,m:`한 문단의 핵심을 한 문장으로 줄이는가. 모든 독해의 출발점, 비문학 정답률의 직접 변수.`,x:`매일 비문학 한 지문에서 문단별 한 문장 요약. 글자 수 30자 제한이 핵심.`},
+  {n:"거시구조 인식",c:"MACRO-STRUCTURE",q:"C10·C12",r:false,m:`문단 간 관계(병렬·대조·예시·인과·문제-해결)를 의식하며 읽는가. 비문학 고난도에서 정답률을 가르는 결정적 축.`,x:`지문의 문단 사이 관계를 화살표로. "왜 다음 문단으로 넘어갔나"를 매번 묻기.`},
+  {n:"정밀 구조독해",c:"FINE-STRUCTURE",q:"C14",r:false,m:`문장 간 관계(인과·비례·전제-결론)를 의식하는가. 거시구조보다 깊은 독해. 수능 신유형 비문학에서 비중 증가.`,x:`짧은 단락(3~5문장)의 문장 사이 논리 관계를 화살표·기호로. 답이 아니라 구조를 그리는 훈련.`},
+  {n:"작업기억",c:"WORKING-MEMORY",q:"C15",r:true,m:`다 읽고도 뭘 읽었는지 기억 안 나 자꾸 되돌아가는가. 독해력보다 작업기억 부담이 원인일 수 있다. 시간 낭비의 큰 원인.`,x:`읽으면서 문단별 키워드를 여백에 메모. 머리에서 종이로 부담을 옮긴다.`},
+  {n:"추상-구체 연결",c:"ABSTRACT-CONCRETE",q:"C16",r:false,m:`지문의 예시가 어떤 개념을 설명하는지 연결하는가. "예시-개념 매칭"은 정답률 80%+의 핵심 회로.`,x:`예시 문장마다 "어느 개념의 사례인가"를 위쪽 문단에서 찾아 화살표 연결.`},
+  {n:"문맥 추론",c:"CONTEXT-INFERENCE",q:"C13",r:false,m:`모르는 어휘도 문맥으로 의미를 추론하는가. 어휘력의 양보다 추론의 정확도가 더 중요.`,x:`모르는 단어를 만나면 사전 전 30초 문맥 추론 후 확인. 정확도보다 시도가 핵심.`},
+  {n:"개념어 처리",c:"CONCEPTUAL-LOAD",q:"C29",r:true,m:`한자어·추상어·개념어 많은 문장에서 이해 속도가 느려지는가. 비문학 인문/사회 정답률의 토대.`,x:`전용 어휘 트랙 별도 운영. 매일 5개씩, 추상어·관념어 중심.`},
+  {n:"통사 구조 독해",c:"SYNTAX-PARSING",q:"C30",r:false,m:`긴 문장에서 주어-서술어 관계를 정확히 파악하는가. 30자만 넘어도 무너지면 이 축이 약한 경우가 많다.`,x:`긴 문장을 주어/부사구/서술어로 끊어 표시. 처음엔 / 표시, 나중엔 머릿속에서.`},
+  {n:"추상어 어휘력",c:"ABSTRACT-VOCAB",q:"C28",r:false,m:`"관념적·사변적·유기적" 같은 추상어 뜻을 정확히 아는가. 비문학 빠른 독해의 가장 큰 변수.`,x:`추상어 200제 같은 별도 자료. 하루 5단어 + 예문 만들기.`},
+  {n:"시 감상력·정서 감수성",c:"POEM-SENSE",q:"C1·C6",r:false,m:`시의 화자·정서를 한두 문장으로 요약하는가, 분위기 파악이 수사법 찾기보다 자연스러운가. 정서를 "근거 있는 추론"으로 다루는 능력.`,x:`시 한 편의 화자 정서를 3단어로. 그 단어를 어느 시어에서 끌어왔는지 함께 표시.`},
+  {n:"소설 기본·구조화 독해",c:"NOVEL-STRUCTURE",q:"C2·C7",r:false,m:`서술자와 인물을 구분하는가, 인물 관계도·사건 전개를 그리며 읽는가. 고전소설·장편에서 결정적.`,x:`인물 이름마다 동그라미, 관계는 선으로. 읽기와 동시에 관계도가 그려진다.`},
+  {n:"수사법 적용·갈래 인식",c:"RHETORIC-GENRE",q:"C3·C4",r:false,m:`비유·상징·반어에서 무엇이 무엇에 빗대어졌는지 추론하는가, 갈래별 감상 포인트를 아는가. 문학 선지 정오 판단 회로.`,x:`수사법은 "이름 외우기"가 아니라 "관계 분석". 모든 비유에서 "원관념-보조관념-공통점" 표시.`},
+  {n:"고전 적응력",c:"CLASSICAL",q:"C5",r:false,m:`고전시가의 고어·한자어가 나와도 의미를 추측하는가. 고전 회피의 가장 큰 원인. 맥락 추론의 변형.`,x:`빈출 어휘 50개 암기보다 짧은 작품 5편을 통째로 익숙하게. 익숙해지면 추측이 일어난다.`},
+  {n:"지문 회피X",c:"NO-AVOIDANCE",q:"C11",r:false,m:`과학·기술 지문이 나와도 끝까지 읽는가. "이건 내 영역이 아냐"가 점수 천장을 만든다.`,x:`기피 영역 짧은 지문(800자 이하)부터 다시. 한 달에 10편씩.`},
+  {n:"독서 이력·시사 노출",c:"READING-HISTORY",q:"C31·C32",r:false,m:`1년에 인문·사회·과학 도서 3권 이상 읽는가, 신문 칼럼을 읽는가. 단기엔 못 늘리지만 장기 독해력의 가장 큰 변수.`,x:`추천 도서 리스트 분기별 갱신. 학생이 흥미로워할 한 권부터.`}
+ ]},
+ {cat:"5. 영역 지식 (문법·화작·매체)",desc:"영역별 기초 지식",axes:[
+  {n:"문법 개념",c:"GRAMMAR-CONCEPT",q:"C17·C18",r:false,m:`음운 변동 3가지 이상 떠올리는가, 단어·형태소·음절을 구분하는가. 문법의 가장 기초. 없으면 적용도 시작 못 한다.`,x:`용어 암기가 아니라 "예문에서 찾아내는" 훈련. 정의보다 실제 단어 안 위치 인식 먼저.`},
+  {n:"문법 적용",c:"GRAMMAR-APPLY",q:"C19·C22",r:false,m:`안긴문장·안은문장을 구분하는가, 개념을 알아도 적용에서 자주 틀리는가. 개념 암기형과 적용 불안형의 분기점.`,x:`새 개념 직후 학생이 예문 3개 만들기. 만든 예문에서 다시 그 개념을 찾는 순환.`},
+  {n:"문법 직관",c:"GRAMMAR-INTUITION",q:"C20",r:false,m:`"은/는"과 "이/가" 차이 같은 미세 구분을 설명하는가. 안정된 학생은 직관과 개념이 동시에 작동.`,x:`"철수가 왔다" vs "철수는 왔다" 차이를 학생이 먼저 말하게 한 뒤 개념 정리.`},
+  {n:"문법 흥미도",c:"GRAMMAR-INTEREST",q:"C21",r:false,m:`형태소 분석·음운 변동이 퍼즐처럼 흥미로운가. 언매 선택 가능성을 가르는 축. 흥미가 있으면 고2 언매 진입이 쉽다.`,x:`음운 변동 퀴즈를 게임처럼. 인터랙티브 도구(음운변동 84제 등) 활용.`},
+  {n:"화법 인식",c:"SPEECH-AWARE",q:"C23·C26",r:false,m:`토론의 입론·반론 구조를 아는가, 발표 자료에서 청중을 고려하는가. 점수보다 학생부 비교과에 영향이 크다.`,x:`수행평가 화법 단원을 다듬을 기회로. 별도 학습보다 수행평가 연계가 효율적.`},
+  {n:"작문 구조화·점검",c:"WRITING-STRUCTURE",q:"C24·C27",r:false,m:`자료로 개요를 짜는가, 쓰면서 통일성·응집성을 점검하는가. 서술형·논술 대비의 토대.`,x:`매주 100~200자 짧은 글. 주제는 시험 범위 연동. 통일성·응집성을 빨간 펜으로 표시.`},
+  {n:"매체 인식",c:"MEDIA-LITERACY",q:"C25",r:false,m:`매체별(인쇄·방송·인터넷) 특성 차이를 아는가. 2022 개정에서 비중 증가. 고1에 토대를 잡아야.`,x:`같은 사건을 신문·방송·SNS에서 어떻게 다루는지 비교. 한 학기 한두 번이라도.`}
+ ]},
+ {cat:"6. 내신 대비",desc:"학교 시험을 시험화하는 능력",axes:[
+  {n:"단권화 습관",c:"SINGLE-BOOK",q:"E11",r:false,m:`강조 사항을 교과서 한 권에 모으는가. 내신 1등급 거의 모두의 습관. 흩어진 학생은 시험 직전 자료 찾는 데 시간을 쓴다.`,x:`범위가 정해지면 첫 주는 단권화에만. 교과서·프린트·필기·문제집을 교과서 한 권에 통합.`},
+  {n:"학교자료 활용",c:"SCHOOL-MATERIAL",q:"E8",r:false,m:`선생님이 준 자료(프린트·PPT·학습지)를 보관·복습하는가. 학교 문제는 학교 자료에서 나온다. 자료 분실=점수 분실.`,x:`학기 초 클리어 파일 의무화. 받는 즉시 분류·정리. "받기→가방→사라짐" 차단.`},
+  {n:"수업 정보 수집",c:"CLASS-INTEL",q:"E2",r:false,m:`수업 중 강조·농담을 따로 표시하는가. 같은 수업도 시험 정보 수집 여부가 점수로 직결.`,x:`필기 두 색 운영. 검정=내용 / 빨강=강조·반복·농담. 시각적 구분이 곧 정보 등급화.`},
+  {n:"외부 지문 대응",c:"EXTERNAL-TEXT",q:"E9",r:true,m:`안 배운 외부 작품이 나오면 당황해 실수가 많은가. 외부 지문 비중 증가 추세. 약하면 갑자기 점수가 내려간다.`,x:`학교 작품과 같은 갈래·시대의 외부 작품을 주 1편 노출. 출제 가능성보다 갈래 친숙도가 목적.`},
+  {n:"서술형 대응",c:"SHORT-ANSWER",q:"E10",r:false,m:`조건에 맞춰 답안 쓰는 서술형에 자신 있는가. 서술형은 양보다 형식. 조건 충족+핵심어+문장 구조.`,x:`답안 후 ① 조건 ② 핵심어 ③ 문장 완결성 자가 점검표. 기출 5문항부터.`},
+  {n:"자율 학습·기출 활용",c:"SELF-STUDY",q:"E1·E4",r:false,m:`진도와 별개로 자습서·평가문제집을 푸는가, 학교 기출을 풀어봤는가. 내신 상위권의 표지.`,x:`학교별 기출 풀 공유. 시험 2주 전 1회독, 1주 전 2회독.`},
+  {n:"시험 준비 시점",c:"PREP-TIMING",q:"E5",r:false,m:`시험 2주 전부터 본격 시작하는가. 시작 시점이 곧 점수. "1주 전부터"는 이미 늦다.`,x:`시험 3주 전 "시험 준비 진입 점검" 미팅. 단권화·기출 진도 확인.`},
+  {n:"수행 계획성",c:"PERFORMANCE-PLAN",q:"E3",r:false,m:`수행 주제를 받으면 자료조사부터 미리 시작하는가. 수행 점수는 누적되어 학기말 등급을 가른다.`,x:`공지일+자료조사일+초안일+제출일을 캘린더에 같이 표시. 마감 직전 작성 차단.`},
+  {n:"능동적 시험 대비",c:"ACTIVE-PREP",q:"E7",r:false,m:`친구들과 예상 문제를 만들어봤는가. 시험을 받아내는 학생과 출제자 시점에서 보는 학생의 차이.`,x:`시험 2주 전 "내가 출제자라면" 활동. 학생들이 문제 3개씩 만들어 교환.`}
+ ]},
+ {cat:"7. 수능 대비",desc:"선지를 판별하는 회로",axes:[
+  {n:"근거 찾기",c:"EVIDENCE-LOCATING",q:"F13",r:false,m:`"왜 이게 답인지" 지문 어느 줄에서 근거가 나오는지 짚는가. 감 의존과 근거 기반을 가르는 결정적 축.`,x:`모든 정답·오답 선지 옆에 지문 줄 번호 표시. 처음엔 느려도 한 달이면 자동화.`},
+  {n:"선지 부분/전체 판별",c:"PARTIAL-WHOLE",q:"F14",r:false,m:`일부는 맞지만 전체가 틀린 선지를 구분하는가. 매력적 오답의 가장 흔한 함정. 1~2등급의 분기점.`,x:`선지를 절(節) 단위로 끊어 각 절의 정오를 따로. "절 4개 중 3개 맞아도 1개 틀리면 오답."`},
+  {n:"과잉진술 인지",c:"OVERCLAIM",q:"F15",r:false,m:`선지가 지문보다 과하게 말하는지 확인하는가. "모든·항상·반드시·전혀" 같은 단정이 함정 신호.`,x:`단정 표현을 만나면 동그라미. 그 단정에 부합하는 근거가 지문에 있는지 검증.`},
+  {n:"보기 활용력",c:"BOGI-USE",q:"F12",r:false,m:`〈보기〉 조건을 지문과 연결해 추론하는 게 어렵지 않은가. 문학 보기·비문학 응용 모두에서 결정적.`,x:`〈보기〉 먼저 읽고 핵심어 3개 동그라미. 지문/선지에서 그 핵심어 연결 부분을 찾아 표시.`},
+  {n:"매력적 오답·선지 비교",c:"DECOY",q:"F7·F11",r:true,m:`매력적 오답에 자주 속는가, 마지막 두 선지에서 갈등하다 틀리는가. 1등급도 마지막에 무너지는 지점.`,x:`두 선지 갈등 시 종이에 둘의 차이를 직접 적게. "어디가 다른가"를 명시하면 정답이 보인다.`},
+  {n:"시간 측정 학습",c:"TIMED-PRACTICE",q:"F1",r:false,m:`모의고사를 시간 재고 풀어봤는가. 평소 시간을 안 재면 시험장에서 처음 시간 압박을 만난다.`,x:`주 1회 이상 80분 풀이 세션. 처음 100분, 점차 80분으로 압축.`},
+  {n:"처리 속도",c:"PROCESSING-SPEED",q:"F2·F3",r:false,m:`80분에 45문항을 다 푸는가, 비문학 한 지문을 평균 8분 안에 푸는가. 절대적 시간 능력.`,x:`한 지문 12분→10분→8분 단계적 압축. 정답률 유지한 채 시간만 줄인다.`},
+  {n:"풀이 순서 전략",c:"SOLVING-ORDER",q:"F4",r:false,m:`나만의 풀이 순서(문학·독서·언매·화작)가 정해졌는가. 시험 운영의 가장 큰 변수. 없으면 매번 결과가 다르다.`,x:`평균 정답률 높은 영역부터 푸는 순서를 정한다. 한 번 정하면 시험장에서 안 바꾼다.`},
+  {n:"문제 넘기기",c:"SKIP-MOVE",q:"F5",r:false,m:`막히는 문제는 표시하고 넘어가는가. 한 문제에 매달리는 순간 그 시험은 무너진다.`,x:`"문제당 max 시간". 비문학 1.5분, 문학 1분 초과 시 별표 후 무조건 넘기기.`},
+  {n:"사후 분석",c:"POST-SOLVE",q:"F8",r:false,m:`풀고 나서 지문을 다시 읽으며 분석하는 시간을 갖는가. 풀고 끝내는 학생은 같은 패턴에 매번 걸린다.`,x:`한 회분 풀이 후 30분 분석. 풀이 시간보다 분석 시간이 더 길어도 괜찮다.`},
+  {n:"기출 노출·수능 인지",c:"EXAM-AWARENESS",q:"F6·F9·F10",r:false,m:`수능 기출을 풀어봤는가, 수능특강·등급컷 개념을 정확히 아는가. 고1이 수능을 "현실"로 인식하는 축.`,x:`고1 1학기 안에 평가원 기출 1회분. 점수보다 "이게 수능이구나" 체감이 목적.`}
+ ]},
+ {cat:"8. 시험 운영·시간관리",desc:"실력과 별개로 점수를 가르는 진단축",axes:[
+  {n:"완벽주의 지연",c:"PERFECTION-DELAY",q:"G5",r:true,m:`어려운 지문에 시간을 너무 써 다른 문제에 영향을 준 적이 있는가. "이걸 풀어야 한다"는 감각이 시험 전체를 무너뜨린다.`,x:`"완벽한 한 문제보다 완성된 한 시험" 룰. 막힌 문제에서 90초 이상 머물지 않기.`},
+  {n:"감각 질주",c:"SPEED-RUSH",q:"G8",r:true,m:`시간이 부족하면 지문을 대충 읽고 감으로 고르는가. 빠르다고 시간이 절약되는 게 아니다. 정답률이 무너진다.`,x:`"지문 회귀→근거 짚기" 단계 강제. 처음엔 느려도 한 달이면 정답률이 따라온다.`},
+  {n:"후반 붕괴",c:"LATE-COLLAPSE",q:"G4",r:true,m:`시간 부족으로 뒤쪽 문제를 급하게 푸는가. 가장 흔하고 손해가 큰 패턴. 뒤쪽이 보통 배점이 높다.`,x:`영역별 시간 캡. 화작 11분·언매 15분·문학 30분·독서 24분 등. 초과 시 무조건 다음 영역.`},
+  {n:"난도 훑기",c:"DIFFICULTY-SCAN",q:"G6",r:false,m:`풀기 전 전체 문항 수·난도를 대략 확인하는가. 전체를 안 보고 시작하면 페이스 조절이 안 된다.`,x:`시작 직후 30초간 전체 페이지를 넘기며 지문 길이·문제 수 훑기. 이 30초가 80분을 좌우.`},
+  {n:"검토 시간 확보",c:"REVIEW-TIME",q:"G7",r:false,m:`검토 시간을 남기려 의식하는가. 검토 5분이 1~2문제 정답률을 올린다. 등급을 가르는 시간.`,x:`목표 풀이 75분, 5분은 무조건 검토. 우선순위 = 별표 문제 → 두 선지 갈등.`}
+ ]}
+];
+
 const FIT=[
  {t:"Type A. 성실 / 노력형",sch:"군포고 · 흥진고",desc:'"성실함과 엉덩이로 승부하는 노력파"',
   li:["양이 많아도 계획적으로 끝까지 읽어냄","교과서·자습서 세세한 내용(날개·학습활동)까지","암기 위주 시험에서 기복 없음","복잡한 문법 규칙 암기 거부감 적음"],
@@ -618,6 +751,13 @@ function renderTime(){
   wrap.innerHTML=`<div class="tt-board">${cols}</div>`;
 }
 function renderFit(){
+  $("#assessGuide").innerHTML=ASSESS.map(cat=>`<div class="ax-cat">
+    <h3 class="ax-cat-h">${cat.cat}<span>${cat.desc}</span></h3>
+    <div class="ax-list">${cat.axes.map(a=>`<div class="ax${a.r?' r-axis':''}" data-s="${(a.n+' '+a.c+' '+a.m).toLowerCase()}">
+      <div class="ax-top"><span class="ax-name">${a.n}</span>${a.r?'<span class="ax-r">R · 높을수록 약점</span>':''}<span class="ax-code">${a.c}</span><span class="ax-q">${a.q}</span></div>
+      <p class="ax-mean">${a.m}</p>
+      <p class="ax-rx"><b>처방</b>${a.x}</p>
+    </div>`).join('')}</div></div>`).join('');
   $("#fitCards").innerHTML=FIT.map(f=>`<div class="card"><div class="card-head"><span class="name" style="font-size:16px">${f.t}</span></div>
     <div class="headline">유리 학교 · ${f.sch}</div><p class="kv" style="font-style:italic;color:var(--muted)">${f.desc}</p>
     <div class="sec"><ul>${f.li.map(x=>`<li>${x}</li>`).join('')}</ul></div>
@@ -636,6 +776,15 @@ function renderCurri(){
 $("#q").addEventListener("input",e=>{curQ=e.target.value;render();});
 $("#gradeChips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;
   document.querySelectorAll("#gradeChips .chip").forEach(x=>x.classList.remove("on"));b.classList.add("on");curGrade=b.dataset.g;render();});
+$("#axq").addEventListener("input",e=>{
+  const q=e.target.value.trim().toLowerCase();let any=false;
+  document.querySelectorAll("#assessGuide .ax-cat").forEach(cat=>{
+    let shown=0;
+    cat.querySelectorAll(".ax").forEach(ax=>{const m=!q||ax.dataset.s.includes(q);ax.style.display=m?"":"none";if(m)shown++;});
+    cat.style.display=shown?"":"none";if(shown)any=true;
+  });
+  $("#axEmpty").style.display=any?"none":"block";
+});
 $("#tabs").addEventListener("click",e=>{const b=e.target.closest(".tab");if(!b)return;
   document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");
   document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));$("#"+b.dataset.tab).classList.add("active");
