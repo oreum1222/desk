@@ -260,6 +260,7 @@ footer b{color:var(--text)}
 <nav class="tabs"><div class="wrap tabs-in" id="tabs">
   <button class="tab active" data-tab="schools">학교별 상담</button>
   <button class="tab" data-tab="time">시간표 · 여석</button>
+  <button class="tab" data-tab="summer">2026 여름방학</button>
   <button class="tab" data-tab="fit">진단 결과 해설</button>
   <button class="tab" data-tab="curri">운영 · 커리큘럼</button>
 </div></nav>
@@ -290,6 +291,18 @@ footer b{color:var(--text)}
   <section class="panel" id="time">
     <div class="note">💡 여석은 <b style="color:var(--accent)">초록</b> = 여유, <b style="color:var(--danger)">빨강</b> = 마감 임박(2자리 이하), 회색 = 정원 마감. 상담 시 마감 임박 반은 등록을 서두르도록 안내.</div>
     <div id="timeTables"></div>
+  </section>
+
+  <!-- ░░ 2026 여름방학 ░░ -->
+  <section class="panel" id="summer">
+    <p class="sub">2026 여름방학 특강 시간표 — 신규·재원생 특강 상담용.</p>
+    <div class="note">📅 개강일(잠정): <span id="summerOpens"></span></div>
+    <div id="summerBoard"></div>
+    <div class="note" style="margin-top:8px">🎓 <b style="color:var(--accent)">고3 정규반</b>은 특강과 별도 운영 · 토 09:00-12:00 / 금·일 19:00-22:00 (가경T). 학교별 내신 클리닉 병행.</div>
+    <div class="desk-only"><div class="tablecard" style="margin-top:16px">
+      <div class="th" style="color:var(--danger)">🔴 강사 연락처 · 근무 (내부 전용)</div>
+      <table><thead><tr><th>강사</th><th>연락처</th><th>근무</th></tr></thead><tbody id="summerContacts"></tbody></table>
+    </div></div>
   </section>
 
   <!-- ░░ 성향 진단 ░░ -->
@@ -677,6 +690,31 @@ const HI1CURRI=[
  ["2027.1월","고2 진학 + 예비고2 과정 시작"]
 ];
 
+/* ===== 2026 여름방학 특강 ===== */
+const SUMMER={
+ opens:[["7/24 (금)","고전문법 개강"],["7/27 (월)","현대문법 개강"],["7/12 (일)","고전 영역"]],
+ classes:[
+  {day:"수",time:"10:00-13:30",teacher:"가경",subject:"현대문법",hours:"3.5H"},
+  {day:"수",time:"14:00-17:30",teacher:"가경",subject:"고전문법",hours:"3.5H"},
+  {day:"목",time:"10:00-13:00",teacher:"은규",subject:"문학개념어",hours:"3H"},
+  {day:"목",time:"19:00-22:00",teacher:"은규",subject:"고전문학",hours:"3H"},
+  {day:"토",time:"10:00-13:30",teacher:"은규",subject:"고전문법",hours:"3.5H"},
+  {day:"토",time:"10:00-13:30",teacher:"다미",subject:"고전문법",hours:"3.5H"},
+  {day:"토",time:"10:00-13:00",teacher:"지연",subject:"고전문학",hours:"3H"},
+  {day:"토",time:"10:00-13:00",teacher:"은규",subject:"독해심화",hours:"3H"},
+  {day:"토",time:"14:00-17:30",teacher:"은규(임시)",subject:"고전문법",hours:"3.5H"},
+  {day:"토",time:"14:00-17:00",teacher:"은규",subject:"독해기초",hours:"3H"},
+  {day:"토",time:"18:00-21:30",teacher:"은규",subject:"현대문법",hours:"3.5H"},
+  {day:"일",time:"13:00-16:00",teacher:"원철",subject:"약술논술",hours:"3H"}
+ ],
+ contacts:[
+  ["가경T","010-4067-7452","월·금·토"],["은규T","010-4506-7697","월 휴무"],
+  ["해솔T","010-8362-0722","수업일에만"],["예담T","010-2922-7463","금·토·일"],
+  ["지연T","010-6219-1419","수업일에만"],["상직T","010-4814-4718","수업일에만"],
+  ["시표T","010-5714-6929","수업일에만"]
+ ]
+};
+
 /* ===== RENDER ===== */
 const $=s=>document.querySelector(s), ce=t=>document.createElement(t);
 function seatTag(cur,max){
@@ -750,6 +788,20 @@ function renderTime(){
   });
   wrap.innerHTML=`<div class="tt-board">${cols}</div>`;
 }
+function renderSummer(){
+  $("#summerOpens").innerHTML=SUMMER.opens.map(o=>`<span class="tag" style="margin-right:6px">${o[0]} · ${o[1]}</span>`).join('');
+  const days=["수","목","토","일"];
+  let cols="";
+  days.forEach(d=>{
+    const cs=SUMMER.classes.filter(c=>c.day===d);
+    if(!cs.length) return;
+    const cards=cs.map(c=>`<div class="tt-card"><div class="tt-h"><span class="sname">${c.subject}</span><span class="gradebadge">${c.hours}</span></div>
+      <div class="tt-row"><div class="r1"><span class="d">${c.time}</span></div><div class="r2"><span class="tch">${c.teacher}T</span></div></div></div>`).join('');
+    cols+=`<div class="tt-col"><h3 class="tt-title">${d}요일<span class="n">${cs.length}강좌</span></h3>${cards}</div>`;
+  });
+  $("#summerBoard").innerHTML=`<div class="tt-board">${cols}</div>`;
+  $("#summerContacts").innerHTML=SUMMER.contacts.map(c=>`<tr><td><b>${c[0]}</b></td><td>${c[1]}</td><td style="color:var(--muted)">${c[2]}</td></tr>`).join('');
+}
 function renderFit(){
   $("#assessGuide").innerHTML=ASSESS.map(cat=>`<div class="ax-cat">
     <h3 class="ax-cat-h">${cat.cat}<span>${cat.desc}</span></h3>
@@ -821,7 +873,7 @@ pinInput.addEventListener("keydown",e=>{if(e.key==="Enter")tryPin();if(e.key==="
 pin.addEventListener("click",e=>{if(e.target===pin)pin.classList.remove("on");});
 
 /* init */
-function renderAll(){render();renderTime();renderFit();renderCurri();}
+function renderAll(){render();renderTime();renderSummer();renderFit();renderCurri();}
 async function boot(){
   if(WEBAPP_URL){
     try{
