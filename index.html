@@ -189,25 +189,24 @@ td .seat{font-weight:700}
   padding:14px 16px;font-size:13px;color:#cfe0d5;margin-bottom:18px}
 .sub{font-size:13px;color:var(--muted);margin:-6px 0 18px}
 
-/* ── 여름방학 특강 (시간대별 가로 배치) ── */
-.sm-day{margin-bottom:24px}
-.sm-day-h{font-size:14px;font-weight:800;color:var(--accent);margin:0 0 12px;display:flex;align-items:center;gap:9px;padding-bottom:9px;border-bottom:1px solid var(--border-strong)}
-.sm-day-h .n{font-size:11px;font-weight:600;color:var(--muted);background:var(--accent-soft);border:1px solid var(--border-strong);padding:2px 7px;border-radius:999px}
-.sm-slot{display:flex;gap:14px;align-items:flex-start;margin-bottom:11px}
-.sm-time{flex:none;width:88px;display:flex;flex-direction:column;gap:5px;padding-top:12px}
-.sm-time .tt{font-weight:800;font-size:15px;color:var(--text)}
-.sm-time .cc{font-size:10px;font-weight:700;color:var(--warn);background:rgba(229,192,123,.1);border:1px solid rgba(229,192,123,.28);padding:2px 6px;border-radius:6px;align-self:flex-start;white-space:nowrap}
-.sm-cards{display:flex;gap:10px;flex-wrap:wrap;flex:1;min-width:0}
-.sm-card{flex:0 0 auto;width:206px;background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:12px 14px;transition:.18s}
-.sm-card.multi{border-color:var(--border-strong)}
-.sm-card:hover{border-color:var(--accent-deep)}
-.sm-card .h{display:flex;align-items:center;gap:7px;margin-bottom:8px}
-.sm-card .subj{font-weight:800;font-size:14.5px;letter-spacing:-.2px;color:var(--text);white-space:nowrap}
-.sm-card .badge{font-size:10.5px;font-weight:700;color:var(--accent);background:var(--accent-soft);border:1px solid var(--border-strong);padding:2px 7px;border-radius:6px;margin-left:auto;white-space:nowrap}
-.sm-card .row{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px}
-.sm-card .tm{color:#cfe0d5;font-weight:600;white-space:nowrap}
-.sm-card .tchr{color:var(--muted);white-space:nowrap}
-@media(max-width:430px){.sm-time{width:60px}.sm-card{width:100%}}
+/* ── 여름방학 특강 (요일 열 + 같은 시간 옆으로) ── */
+.sd-board{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;align-items:start}
+.sd-col{min-width:0}
+.sd-col-h{font-size:14px;font-weight:800;color:var(--accent);margin:0 0 12px;display:flex;align-items:center;gap:8px;padding-bottom:9px;border-bottom:1px solid var(--border-strong)}
+.sd-col-h .n{font-size:10.5px;font-weight:600;color:var(--muted);background:var(--accent-soft);border:1px solid var(--border-strong);padding:2px 6px;border-radius:999px}
+.sd-empty{font-size:12.5px;color:var(--muted-2);padding:10px 2px}
+.sd-slot{margin-bottom:12px}
+.sd-time{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px}
+.sd-time .cc{font-size:9.5px;font-weight:700;color:var(--warn);background:rgba(229,192,123,.1);border:1px solid rgba(229,192,123,.28);padding:1px 5px;border-radius:5px;white-space:nowrap}
+.sd-cards{display:flex;gap:7px}
+.sd-card{flex:1 1 0;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:10px 11px;transition:.18s}
+.sd-card.multi{border-color:var(--border-strong)}
+.sd-card:hover{border-color:var(--accent-deep)}
+.sd-subj{font-weight:800;font-size:13.5px;letter-spacing:-.2px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:5px}
+.sd-hours{font-size:9.5px;font-weight:700;color:var(--accent);background:var(--accent-soft);border:1px solid var(--border-strong);padding:1px 5px;border-radius:5px;flex:none}
+.sd-meta{font-size:11.5px;color:var(--muted);margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:900px){.sd-board{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.sd-board{grid-template-columns:1fr}}
 
 /* ── 진단 결과 해설 ── */
 .assess-bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
@@ -716,16 +715,16 @@ const SUMMER={
  classes:[
   {day:"수",time:"10:00-13:30",teacher:"가경",subject:"현대문법",hours:"3.5H"},
   {day:"수",time:"14:00-17:30",teacher:"가경",subject:"고전문법",hours:"3.5H"},
-  {day:"목",time:"10:00-13:00",teacher:"은규",subject:"문학개념어",hours:"3H"},
-  {day:"목",time:"19:00-22:00",teacher:"은규",subject:"고전문학",hours:"3H"},
+  {day:"금",time:"10:00-13:00",teacher:"은규",subject:"문학개념어",hours:"3H"},
+  {day:"금",time:"19:00-22:00",teacher:"은규",subject:"고전문학",hours:"3H"},
   {day:"토",time:"10:00-13:30",teacher:"은규",subject:"고전문법",hours:"3.5H"},
   {day:"토",time:"10:00-13:30",teacher:"다미",subject:"고전문법",hours:"3.5H"},
-  {day:"토",time:"10:00-13:00",teacher:"지연",subject:"고전문학",hours:"3H"},
-  {day:"토",time:"10:00-13:00",teacher:"은규",subject:"독해심화",hours:"3H"},
   {day:"토",time:"14:00-17:30",teacher:"은규(임시)",subject:"고전문법",hours:"3.5H"},
-  {day:"토",time:"14:00-17:00",teacher:"은규",subject:"독해기초",hours:"3H"},
   {day:"토",time:"18:00-21:30",teacher:"은규",subject:"현대문법",hours:"3.5H"},
-  {day:"일",time:"13:00-16:00",teacher:"원철",subject:"약술논술",hours:"3H"}
+  {day:"일",time:"10:00-13:00",teacher:"지연",subject:"고전문학",hours:"3H"},
+  {day:"일",time:"10:00-13:00",teacher:"은규",subject:"독해심화",hours:"3H"},
+  {day:"일",time:"13:00-16:00",teacher:"원철",subject:"약술논술",hours:"3H"},
+  {day:"일",time:"14:00-17:00",teacher:"은규",subject:"독해기초",hours:"3H"}
  ],
  contacts:[
   ["가경T","010-4067-7452","월·금·토"],["은규T","010-4506-7697","월 휴무"],
@@ -810,22 +809,25 @@ function renderTime(){
 }
 function renderSummer(){
   $("#summerOpens").innerHTML=SUMMER.opens.map(o=>`<span class="tag" style="margin-right:6px">${o[0]} · ${o[1]}</span>`).join('');
-  const days=["수","목","토","일"];
-  const html=days.map(d=>{
+  const days=["수","목","금","토","일"];
+  const cols=days.map(d=>{
     const cs=SUMMER.classes.filter(c=>c.day===d);
-    if(!cs.length) return "";
-    const groups={};
-    cs.forEach(c=>{const st=c.time.split("-")[0];(groups[st]=groups[st]||[]).push(c);});
-    const slots=Object.keys(groups).sort().map(st=>{
-      const arr=groups[st], multi=arr.length>1;
-      const cards=arr.map(c=>`<div class="sm-card${multi?' multi':''}">
-        <div class="h"><span class="subj">${c.subject}</span><span class="badge">${c.hours}</span></div>
-        <div class="row"><span class="tm">${c.time}</span><span class="tchr">${c.teacher}T</span></div></div>`).join('');
-      return `<div class="sm-slot"><div class="sm-time"><span class="tt">${st}</span>${multi?`<span class="cc">동시 ${arr.length}개</span>`:''}</div><div class="sm-cards">${cards}</div></div>`;
-    }).join('');
-    return `<div class="sm-day"><h3 class="sm-day-h">${d}요일<span class="n">${cs.length}강좌</span></h3>${slots}</div>`;
+    let body;
+    if(!cs.length){ body=`<div class="sd-empty">개설 강좌 없음</div>`; }
+    else{
+      const groups={};
+      cs.forEach(c=>{(groups[c.time]=groups[c.time]||[]).push(c);});
+      body=Object.keys(groups).sort().map(tm=>{
+        const arr=groups[tm], multi=arr.length>1;
+        const cards=arr.map(c=>`<div class="sd-card${multi?' multi':''}">
+          <div class="sd-subj">${c.subject}<span class="sd-hours">${c.hours}</span></div>
+          <div class="sd-meta">${c.teacher}T</div></div>`).join('');
+        return `<div class="sd-slot"><div class="sd-time">${tm}${multi?`<span class="cc">동시 ${arr.length}</span>`:''}</div><div class="sd-cards">${cards}</div></div>`;
+      }).join('');
+    }
+    return `<div class="sd-col"><h3 class="sd-col-h">${d}요일<span class="n">${cs.length}</span></h3>${body}</div>`;
   }).join('');
-  $("#summerBoard").innerHTML=html;
+  $("#summerBoard").innerHTML=`<div class="sd-board">${cols}</div>`;
   $("#summerContacts").innerHTML=SUMMER.contacts.map(c=>`<tr><td><b>${c[0]}</b></td><td>${c[1]}</td><td style="color:var(--muted)">${c[2]}</td></tr>`).join('');
 }
 function renderFit(){
