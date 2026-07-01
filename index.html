@@ -189,6 +189,26 @@ td .seat{font-weight:700}
   padding:14px 16px;font-size:13px;color:#cfe0d5;margin-bottom:18px}
 .sub{font-size:13px;color:var(--muted);margin:-6px 0 18px}
 
+/* ── 여름방학 특강 (시간대별 가로 배치) ── */
+.sm-day{margin-bottom:24px}
+.sm-day-h{font-size:14px;font-weight:800;color:var(--accent);margin:0 0 12px;display:flex;align-items:center;gap:9px;padding-bottom:9px;border-bottom:1px solid var(--border-strong)}
+.sm-day-h .n{font-size:11px;font-weight:600;color:var(--muted);background:var(--accent-soft);border:1px solid var(--border-strong);padding:2px 7px;border-radius:999px}
+.sm-slot{display:flex;gap:14px;align-items:flex-start;margin-bottom:11px}
+.sm-time{flex:none;width:88px;display:flex;flex-direction:column;gap:5px;padding-top:12px}
+.sm-time .tt{font-weight:800;font-size:15px;color:var(--text)}
+.sm-time .cc{font-size:10px;font-weight:700;color:var(--warn);background:rgba(229,192,123,.1);border:1px solid rgba(229,192,123,.28);padding:2px 6px;border-radius:6px;align-self:flex-start;white-space:nowrap}
+.sm-cards{display:flex;gap:10px;flex-wrap:wrap;flex:1;min-width:0}
+.sm-card{flex:0 0 auto;width:206px;background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:12px 14px;transition:.18s}
+.sm-card.multi{border-color:var(--border-strong)}
+.sm-card:hover{border-color:var(--accent-deep)}
+.sm-card .h{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.sm-card .subj{font-weight:800;font-size:14.5px;letter-spacing:-.2px;color:var(--text);white-space:nowrap}
+.sm-card .badge{font-size:10.5px;font-weight:700;color:var(--accent);background:var(--accent-soft);border:1px solid var(--border-strong);padding:2px 7px;border-radius:6px;margin-left:auto;white-space:nowrap}
+.sm-card .row{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px}
+.sm-card .tm{color:#cfe0d5;font-weight:600;white-space:nowrap}
+.sm-card .tchr{color:var(--muted);white-space:nowrap}
+@media(max-width:430px){.sm-time{width:60px}.sm-card{width:100%}}
+
 /* ── 진단 결과 해설 ── */
 .assess-bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
 .ax-cat{margin-bottom:22px}
@@ -791,15 +811,21 @@ function renderTime(){
 function renderSummer(){
   $("#summerOpens").innerHTML=SUMMER.opens.map(o=>`<span class="tag" style="margin-right:6px">${o[0]} · ${o[1]}</span>`).join('');
   const days=["수","목","토","일"];
-  let cols="";
-  days.forEach(d=>{
+  const html=days.map(d=>{
     const cs=SUMMER.classes.filter(c=>c.day===d);
-    if(!cs.length) return;
-    const cards=cs.map(c=>`<div class="tt-card"><div class="tt-h"><span class="sname">${c.subject}</span><span class="gradebadge">${c.hours}</span></div>
-      <div class="tt-row"><div class="r1"><span class="d">${c.time}</span></div><div class="r2"><span class="tch">${c.teacher}T</span></div></div></div>`).join('');
-    cols+=`<div class="tt-col"><h3 class="tt-title">${d}요일<span class="n">${cs.length}강좌</span></h3>${cards}</div>`;
-  });
-  $("#summerBoard").innerHTML=`<div class="tt-board">${cols}</div>`;
+    if(!cs.length) return "";
+    const groups={};
+    cs.forEach(c=>{const st=c.time.split("-")[0];(groups[st]=groups[st]||[]).push(c);});
+    const slots=Object.keys(groups).sort().map(st=>{
+      const arr=groups[st], multi=arr.length>1;
+      const cards=arr.map(c=>`<div class="sm-card${multi?' multi':''}">
+        <div class="h"><span class="subj">${c.subject}</span><span class="badge">${c.hours}</span></div>
+        <div class="row"><span class="tm">${c.time}</span><span class="tchr">${c.teacher}T</span></div></div>`).join('');
+      return `<div class="sm-slot"><div class="sm-time"><span class="tt">${st}</span>${multi?`<span class="cc">동시 ${arr.length}개</span>`:''}</div><div class="sm-cards">${cards}</div></div>`;
+    }).join('');
+    return `<div class="sm-day"><h3 class="sm-day-h">${d}요일<span class="n">${cs.length}강좌</span></h3>${slots}</div>`;
+  }).join('');
+  $("#summerBoard").innerHTML=html;
   $("#summerContacts").innerHTML=SUMMER.contacts.map(c=>`<tr><td><b>${c[0]}</b></td><td>${c[1]}</td><td style="color:var(--muted)">${c[2]}</td></tr>`).join('');
 }
 function renderFit(){
