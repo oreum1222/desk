@@ -885,7 +885,7 @@ async function tryPin(){
       const r=await fetch(WEBAPP_URL+sep+"pin="+encodeURIComponent(entered));
       const j=await r.json();
       const authed=j&&j.cards&&j.cards.some(c=>c.notes&&c.notes.length);
-      if(authed){CARDS=j.cards;render();pin.classList.remove("on");setDesk(true);return;}
+      if(authed){CARDS=j.cards;applyCaps(CARDS);render();renderTime();pin.classList.remove("on");setDesk(true);return;}
       pinErr.textContent="PIN이 올바르지 않습니다";pinInput.value="";pinInput.focus();return;
     }catch(e){pinErr.textContent="연결 오류 — 다시 시도하세요";return;}
   }
@@ -899,7 +899,14 @@ pinInput.addEventListener("keydown",e=>{if(e.key==="Enter")tryPin();if(e.key==="
 pin.addEventListener("click",e=>{if(e.target===pin)pin.classList.remove("on");});
 
 /* init */
-function renderAll(){render();renderTime();renderSummer();renderFit();renderCurri();}
+/* 내신반 정원 규칙 (3차고사 기준: 고1 20명 / 고2 25명). 중등·고3은 시트값 유지 */
+function applyCaps(cards){
+  cards.forEach(c=>{
+    const cap = c.grade==="고1"?20 : c.grade==="고2"?25 : null;
+    if(cap) c.sessions.forEach(s=>{ if(s[3]!==null) s[3]=cap; });
+  });
+}
+function renderAll(){applyCaps(CARDS);render();renderTime();renderSummer();renderFit();renderCurri();}
 async function boot(){
   if(WEBAPP_URL){
     try{
