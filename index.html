@@ -899,11 +899,29 @@ pinInput.addEventListener("keydown",e=>{if(e.key==="Enter")tryPin();if(e.key==="
 pin.addEventListener("click",e=>{if(e.target===pin)pin.classList.remove("on");});
 
 /* init */
-/* 내신반 정원 규칙 (3차고사 기준: 고1 20명 / 고2 25명). 중등·고3은 시트값 유지 */
+/* 원생목록(2026-07-02) 기준 반별 재원 인원 */
+const ENROLL={
+ "고1|군포고|토 12-15":8,"고1|군포고|토 14-17":8,
+ "고1|산본고|목 19-22":12,"고1|산본고|금 19-22":8,"고1|산본고|토 10-13":10,"고1|산본고|일 18-21":7,
+ "고1|수리고|수 17-20":2,"고1|수리고|일 11-14":11,"고1|용호고|일 14-17":4,
+ "고1|흥진고|토 10-13":7,"고1|군포중앙고|일 10-13":5,
+ "고2|군포고|토 17-20":10,"고2|군포고|일 14-17":14,"고2|군포중앙고|토 19-22":15,
+ "고2|산본고|수 17-20":9,"고2|산본고|일 19-22":15,"고2|수리고|수 19-22":4,"고2|수리고|일 19-22":10,
+ "고2|용호고|일 12-15":10,"고2|흥진고|일 10-13":8,"고2|수원외고|일 17-20":4,
+ "중등|궁내·용호|월 17-20":1,"중등|산본·용호·당동|토 14-17":4,"중등|산본·당동·궁내|토 10-13":3,
+ "고3|금요/토요 정규반|금 19-22":36,"고3|금요/토요 정규반|토 09-12":37
+};
+const MIDMAX={"궁내·용호":2,"산본·용호·당동":4,"산본·당동·궁내":3};
+/* 정원 규칙(3차: 고1 20·고2 25) + 원생목록 기준 현재인원 반영 */
 function applyCaps(cards){
   cards.forEach(c=>{
     const cap = c.grade==="고1"?20 : c.grade==="고2"?25 : null;
-    if(cap) c.sessions.forEach(s=>{ if(s[3]!==null) s[3]=cap; });
+    c.sessions.forEach(s=>{
+      if(cap && s[3]!==null) s[3]=cap;
+      if(c.grade==="중등" && MIDMAX[c.school]) s[3]=MIDMAX[c.school];
+      const key=c.grade+"|"+c.school+"|"+s[0];
+      if(ENROLL[key]!==undefined) s[2]=ENROLL[key];
+    });
   });
 }
 function renderAll(){applyCaps(CARDS);render();renderTime();renderSummer();renderFit();renderCurri();}
