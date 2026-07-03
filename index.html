@@ -337,6 +337,10 @@ footer b{color:var(--text)}
     <p class="sub">2026 여름방학 특강 시간표 — 신규·재원생 특강 상담용.</p>
     <div class="note">📅 개강일(잠정): <span id="summerOpens"></span></div>
     <div id="summerBoard"></div>
+    <div class="tablecard" style="margin-top:22px">
+      <div class="th">🏫 학교별 여름방학 일정</div>
+      <table><thead><tr><th>학교</th><th>방학 기간</th><th>비고</th></tr></thead><tbody id="summerVacation"></tbody></table>
+    </div>
     <h3 style="margin:26px 0 4px;font-size:15px;font-weight:800;color:var(--warn)">🟡 지연T 월요일 유료 단과 (오름패스 별도)</h3>
     <div id="summerDetail"></div>
     <div class="note" style="margin-top:16px">🎓 <b style="color:var(--accent)">고3 정규반</b>은 특강과 별도 운영 · 토 09:00-12:00 / 금·일 19:00-22:00 (가경T). 학교별 내신 클리닉 병행.</div>
@@ -734,6 +738,12 @@ const HI1CURRI=[
 /* ===== 2026 여름방학 특강 ===== */
 const SUMMER={
  opens:[["7/24 (금)","고전문법 개강"],["7/27 (월)","현대문법 개강"],["7/12 (일)","고전 영역"]],
+ vacations:[
+  ["산본고","7/10(금) ~ 8/21(금)",""],
+  ["군포중앙고","7/20(월) ~ 8/5(수)",""],
+  ["용호고","7/21(화) ~ 8/6(목)",""],
+  ["수리고","7/20(월) ~ 8/11(화)","개학 8/12(수)"]
+ ],
  classes:[
   {day:"월",time:"10:00-13:30",teacher:"지연",subject:"문학 심화",hours:"3.5H",paid:true},
   {day:"월",time:"18:00-21:30",teacher:"지연",subject:"독해 쌩기초",hours:"3.5H",paid:true},
@@ -863,6 +873,7 @@ function renderSummer(){
     return `<div class="sd-col"><h3 class="sd-col-h">${d}요일<span class="n">${cs.length}</span></h3>${body}</div>`;
   }).join('');
   $("#summerBoard").innerHTML=`<div class="sd-board">${cols}</div>`;
+  $("#summerVacation").innerHTML=SUMMER.vacations.map(v=>`<tr><td><b>${v[0]}</b></td><td>${v[1]}</td><td style="color:var(--warn)">${v[2]||'-'}</td></tr>`).join('');
   const det=SUMMER.details.map(d=>`<div class="paid-card">
     <div class="paid-h"><span class="paid-name">${d.sub}</span><span class="paid-time">${d.time}</span></div>
     <div class="paid-slogan">"${d.slogan}" · ${d.teacher}</div>
