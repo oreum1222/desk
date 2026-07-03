@@ -339,7 +339,7 @@ footer b{color:var(--text)}
     <div id="summerBoard"></div>
     <div class="tablecard" style="margin-top:22px">
       <div class="th">🏫 학교별 여름방학 일정</div>
-      <table><thead><tr><th>학교</th><th>방학 기간</th><th>비고</th></tr></thead><tbody id="summerVacation"></tbody></table>
+      <table><thead><tr><th>학교</th><th>방학 기간</th><th>개학</th></tr></thead><tbody id="summerVacation"></tbody></table>
     </div>
     <h3 style="margin:26px 0 4px;font-size:15px;font-weight:800;color:var(--warn)">🟡 지연T 월요일 유료 단과 (오름패스 별도)</h3>
     <div id="summerDetail"></div>
@@ -740,9 +740,11 @@ const SUMMER={
  opens:[["7/24 (금)","고전문법 개강"],["7/27 (월)","현대문법 개강"],["7/12 (일)","고전 영역"]],
  vacations:[
   ["산본고","7/10(금) ~ 8/21(금)",""],
+  ["군포고","7/16(목) ~ 미정","미정"],
+  ["흥진고","7/20(월) ~ 8/9(일)","8/10(월)"],
   ["군포중앙고","7/20(월) ~ 8/5(수)",""],
-  ["용호고","7/21(화) ~ 8/6(목)",""],
-  ["수리고","7/20(월) ~ 8/11(화)","개학 8/12(수)"]
+  ["수리고","7/20(월) ~ 8/11(화)","8/12(수)"],
+  ["용호고","7/21(화) ~ 8/6(목)",""]
  ],
  classes:[
   {day:"월",time:"10:00-13:30",teacher:"지연",subject:"문학 심화",hours:"3.5H",paid:true},
