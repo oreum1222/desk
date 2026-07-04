@@ -529,6 +529,8 @@ const DESK_PIN = "7452";
 /* ===== 구글시트 연동 — Apps Script 웹앱 URL 붙여넣기 =====
    (비워두면 아래 내장 데이터로 동작. URL 넣으면 시트가 우선) */
 const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyQb6YBesj192ZvEZi8wIYngDCOX_yMjVikKK63o-CF5IcrARvAQkaR19dzqwAspi5_/exec";
+/* 상담일지 전송 웹앱(별도 · [오름] 데스크 상담 자료 시트) */
+const LOG_URL = "https://script.google.com/macros/s/AKfycbz209OlRV3XtUsbIP0Hgumq90tnScjbegB2tO0Y_dkzgRNc0OKalLI1zzdNxNNVPa0P9w/exec";
 
 /* ===== DATA ===== */
 const SYS = [
@@ -1149,11 +1151,11 @@ $("#logSend").addEventListener("click",async ()=>{
   const st=$("#logStatus");
   if(!teachers.length){st.className="log-status err";st.textContent="담당 강사를 선택하세요.";return;}
   if(!contents.length && !etc){st.className="log-status err";st.textContent="전달 내용 또는 기타 사항을 입력하세요.";return;}
-  if(!WEBAPP_URL){st.className="log-status err";st.textContent="전송 서버가 아직 연결되지 않았습니다.";return;}
+  if(!LOG_URL){st.className="log-status err";st.textContent="전송 서버가 아직 연결되지 않았습니다.";return;}
   st.className="log-status";st.textContent="전송 중…";$("#logSend").disabled=true;
   const payload={action:"log",teachers,contents,student:name,school,phone,etc};
   try{
-    await fetch(WEBAPP_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+    await fetch(LOG_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
     st.className="log-status ok";st.textContent="✅ "+teachers.map(t=>t+"T").join("·")+"에게 전송했습니다.";
     document.querySelectorAll(".logTeacher:checked,.logContent:checked").forEach(x=>x.checked=false);
     $("#logName").value="";$("#logSchool").value="";$("#logPhone").value="";$("#logEtc").value="";
