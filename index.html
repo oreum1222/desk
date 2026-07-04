@@ -246,6 +246,27 @@ td .seat{font-weight:700}
 .detail-toggle.open .arrow{transform:rotate(180deg)}
 #summerDetail{margin-top:14px}
 #summerDetail.collapsed{display:none}
+/* 상담일지 폼 */
+.log-card{background:linear-gradient(180deg,var(--surface),var(--surface-2));border:1px solid var(--border-strong);border-radius:16px;padding:20px;margin-top:22px}
+.log-title{margin:0;font-size:16px;font-weight:800}
+.log-desc{font-size:12px;color:var(--muted);margin:4px 0 16px}
+.log-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.log-row input{flex:1;min-width:130px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:13.5px;padding:10px 12px;border-radius:10px;outline:none}
+.log-row input:focus{border-color:var(--accent)}
+.log-field{margin-bottom:14px}
+.log-field>label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;letter-spacing:.3px}
+.log-teachers,.log-checks{display:flex;flex-wrap:wrap;gap:8px}
+.chk{display:inline-flex;align-items:center;gap:7px;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:8px 12px;font-size:13px;cursor:pointer;user-select:none;transition:.15s}
+.chk:hover{border-color:var(--border-strong)}
+.chk input{accent-color:var(--accent-deep);width:15px;height:15px;cursor:pointer;margin:0}
+.chk:has(input:checked){border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
+.log-field textarea{width:100%;min-height:62px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:13.5px;padding:11px 12px;border-radius:10px;outline:none;resize:vertical;line-height:1.6}
+.log-field textarea:focus{border-color:var(--accent)}
+.log-send{width:100%;background:var(--accent);color:#0c1410;font-family:inherit;font-weight:800;font-size:14px;padding:13px;border:0;border-radius:11px;cursor:pointer;transition:.15s;margin-top:4px}
+.log-send:hover{filter:brightness(1.08)}
+.log-send:disabled{opacity:.55;cursor:default}
+.log-status{text-align:center;font-size:13px;margin-top:10px;min-height:18px}
+.log-status.ok{color:var(--accent)}.log-status.err{color:var(--danger)}
 
 /* ── 진단 결과 해설 ── */
 .assess-bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
@@ -378,6 +399,26 @@ footer b{color:var(--text)}
       <div class="term-note">※ 후반부는 학교별 반으로 돌아가 과정을 마무리하므로 시간이 한 번 바뀔 수 있습니다 (담당 선생님이 아이와 조율).</div>
     </div>
     <div id="summerBoard"></div>
+
+    <div class="log-card">
+      <h3 class="log-title">📞 상담 내역 보내기</h3>
+      <p class="log-desc">전화 상담 중 바로 작성 → 담당 강사에게 문자·메일로 전송됩니다.</p>
+      <div class="log-row">
+        <input id="logName" placeholder="학생명" />
+        <input id="logSchool" placeholder="학교 · 학년" />
+        <input id="logPhone" placeholder="연락처 (선택)" />
+      </div>
+      <div class="log-field"><label>담당 강사 (선택)</label><div class="log-teachers" id="logTeachers"></div></div>
+      <div class="log-field"><label>전달 내용</label><div class="log-checks">
+        <label class="chk"><input type="checkbox" class="logContent" value="등록 전 상담 필요"> 등록 전 상담 필요</label>
+        <label class="chk"><input type="checkbox" class="logContent" value="등록 확정 + 개별 상담 필요"> 등록 확정 + 개별 상담 필요</label>
+        <label class="chk"><input type="checkbox" class="logContent" value="재원생 특강 고민 상담 필요"> 재원생 특강 고민 상담 필요</label>
+      </div></div>
+      <div class="log-field"><label>기타 사항</label><textarea id="logEtc" placeholder="위 항목에 없는 내용을 적으면 함께 전송됩니다"></textarea></div>
+      <button class="log-send" id="logSend">보내기 · 문자 + 메일 전송</button>
+      <div class="log-status" id="logStatus"></div>
+    </div>
+
     <button class="desk-btn" id="vacBtn" style="margin-top:20px;border-color:var(--border-strong);color:var(--accent)">🏫 학교별 방학·개학 일정 보기</button>
     <button class="detail-toggle" id="detailToggle">🟡 지연T 월요일 유료 단과 강의계획서 <span class="hint">오름패스 별도 · 눌러서 대상·커리큘럼 보기</span><span class="arrow">▾</span></button>
     <div id="summerDetail" class="collapsed"></div>
@@ -1097,6 +1138,27 @@ function closeFaq(){$("#faqModal").classList.remove("on");}
 $("#faqBtn").addEventListener("click",openFaq);
 $("#faqX").addEventListener("click",closeFaq);
 $("#faqModal").addEventListener("click",e=>{if(e.target===$("#faqModal"))closeFaq();});
+/* 상담일지 폼 */
+const LOG_TEACHERS=["가경","은규","지연","예담","해솔","다미","원철","상직","시표"];
+$("#logTeachers").innerHTML=LOG_TEACHERS.map(t=>`<label class="chk"><input type="checkbox" class="logTeacher" value="${t}"> ${t}T</label>`).join('');
+$("#logSend").addEventListener("click",async ()=>{
+  const teachers=[...document.querySelectorAll(".logTeacher:checked")].map(x=>x.value);
+  const contents=[...document.querySelectorAll(".logContent:checked")].map(x=>x.value);
+  const name=$("#logName").value.trim(), school=$("#logSchool").value.trim(), phone=$("#logPhone").value.trim(), etc=$("#logEtc").value.trim();
+  const st=$("#logStatus");
+  if(!teachers.length){st.className="log-status err";st.textContent="담당 강사를 선택하세요.";return;}
+  if(!contents.length && !etc){st.className="log-status err";st.textContent="전달 내용 또는 기타 사항을 입력하세요.";return;}
+  if(!WEBAPP_URL){st.className="log-status err";st.textContent="전송 서버가 아직 연결되지 않았습니다.";return;}
+  st.className="log-status";st.textContent="전송 중…";$("#logSend").disabled=true;
+  const payload={action:"log",teachers,contents,student:name,school,phone,etc};
+  try{
+    await fetch(WEBAPP_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+    st.className="log-status ok";st.textContent="✅ "+teachers.map(t=>t+"T").join("·")+"에게 전송했습니다.";
+    document.querySelectorAll(".logTeacher:checked,.logContent:checked").forEach(x=>x.checked=false);
+    $("#logName").value="";$("#logSchool").value="";$("#logPhone").value="";$("#logEtc").value="";
+  }catch(e){st.className="log-status err";st.textContent="전송 실패 — 다시 시도하세요.";}
+  $("#logSend").disabled=false;
+});
 /* 유료 단과 강의계획서 토글 */
 $("#detailToggle").addEventListener("click",()=>{
   $("#summerDetail").classList.toggle("collapsed");
