@@ -346,7 +346,7 @@ footer b{color:var(--text)}
   <section class="panel active" id="summer">
     <p class="sub">2026 여름방학 특강 시간표 — 신규·재원생 특강 상담용.</p>
     <div class="terms-box">
-      <div class="term-row"><span class="term-tag t4">4주 완성</span><b>월·수·금 오전·오후</b> · 방학 기간 · 개강 7/13(월)·7/15(수)·7/17(금) → 종강 8/10·8/12·8/14</div>
+      <div class="term-row"><span class="term-tag t4">4주 완성</span><b>월·수·금 오전·오후</b> · 방학 기간 · 개강 7/15(수)·7/17(금) / 월요일 지연T 단과 7/20 → 종강 8/10~8/14</div>
       <div class="term-row"><span class="term-tag t8">8주 완성</span><b>평일 저녁·주말</b> · 7/10(금) 시작 → 8/28~30 종강</div>
       <div class="term-note">※ 후반부는 학교별 반으로 돌아가 과정을 마무리하므로 시간이 한 번 바뀔 수 있습니다 (담당 선생님이 아이와 조율).</div>
     </div>
@@ -881,7 +881,7 @@ function renderSummer(){
     const body=Object.keys(groups).sort().map(tm=>{
       const arr=groups[tm], multi=arr.length>1;
       const cards=arr.map(c=>{
-        const wk=["월","화","수","목","금"].includes(c.day), t=(wk&&parseInt(c.time,10)<17)?"4주":"8주";
+        const wk=["월","화","수","목","금"].includes(c.day), t=(c.paid||(wk&&parseInt(c.time,10)<17))?"4주":"8주";
         return `<div class="sd-card${multi?' multi':''}${c.paid?' paid':''}">
         <div class="sd-subj">${c.subject}<span class="sd-hours">${c.hours}</span></div>
         <div class="sd-meta">${c.teacher}T${c.paid?'<span class="sd-paid">유료</span>':''}<span class="sd-term ${t==="4주"?"t4":"t8"}">${t}</span></div></div>`;
