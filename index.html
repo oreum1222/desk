@@ -237,6 +237,15 @@ td .seat{font-weight:700}
 .paid-managed b{color:var(--accent)}
 .paid-managed ul{margin:7px 0 0;padding-left:18px}
 .paid-managed li{margin:3px 0}
+.detail-toggle{width:100%;text-align:left;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  background:rgba(229,192,123,.07);border:1px solid rgba(229,192,123,.3);border-radius:12px;
+  padding:14px 16px;margin-top:24px;cursor:pointer;color:var(--warn);font-family:inherit;font-size:14px;font-weight:800;transition:.18s}
+.detail-toggle:hover{background:rgba(229,192,123,.13)}
+.detail-toggle .hint{font-weight:500;font-size:12px;color:var(--muted)}
+.detail-toggle .arrow{margin-left:auto;transition:transform .2s;font-size:12px;color:var(--warn)}
+.detail-toggle.open .arrow{transform:rotate(180deg)}
+#summerDetail{margin-top:14px}
+#summerDetail.collapsed{display:none}
 
 /* ── 진단 결과 해설 ── */
 .assess-bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
@@ -370,8 +379,8 @@ footer b{color:var(--text)}
     </div>
     <div id="summerBoard"></div>
     <button class="desk-btn" id="vacBtn" style="margin-top:20px;border-color:var(--border-strong);color:var(--accent)">🏫 학교별 방학·개학 일정 보기</button>
-    <h3 style="margin:26px 0 4px;font-size:15px;font-weight:800;color:var(--warn)">🟡 지연T 월요일 유료 단과 (오름패스 별도)</h3>
-    <div id="summerDetail"></div>
+    <button class="detail-toggle" id="detailToggle">🟡 지연T 월요일 유료 단과 강의계획서 <span class="hint">오름패스 별도 · 눌러서 대상·커리큘럼 보기</span><span class="arrow">▾</span></button>
+    <div id="summerDetail" class="collapsed"></div>
     <div class="note" style="margin-top:16px">🎓 <b style="color:var(--accent)">고3 정규반</b>은 특강과 별도 운영 · 토 09:00-12:00 / 금·일 19:00-22:00 (가경T). 학교별 내신 클리닉 병행.</div>
     <div class="desk-only"><div class="tablecard" style="margin-top:16px">
       <div class="th" style="color:var(--danger)">🔴 강사 연락처 · 근무 (내부 전용)</div>
@@ -1088,6 +1097,11 @@ function closeFaq(){$("#faqModal").classList.remove("on");}
 $("#faqBtn").addEventListener("click",openFaq);
 $("#faqX").addEventListener("click",closeFaq);
 $("#faqModal").addEventListener("click",e=>{if(e.target===$("#faqModal"))closeFaq();});
+/* 유료 단과 강의계획서 토글 */
+$("#detailToggle").addEventListener("click",()=>{
+  $("#summerDetail").classList.toggle("collapsed");
+  $("#detailToggle").classList.toggle("open");
+});
 /* 학교별 방학 일정 팝업 */
 $("#vacBtn").addEventListener("click",()=>$("#vacModal").classList.add("on"));
 $("#vacX").addEventListener("click",()=>$("#vacModal").classList.remove("on"));
