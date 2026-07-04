@@ -369,10 +369,7 @@ footer b{color:var(--text)}
       <div class="term-note">※ 후반부는 학교별 반으로 돌아가 과정을 마무리하므로 시간이 한 번 바뀔 수 있습니다 (담당 선생님이 아이와 조율).</div>
     </div>
     <div id="summerBoard"></div>
-    <div class="tablecard" style="margin-top:22px">
-      <div class="th">🏫 학교별 여름방학 일정</div>
-      <table><thead><tr><th>학교</th><th>방학 기간</th><th>개학</th></tr></thead><tbody id="summerVacation"></tbody></table>
-    </div>
+    <button class="desk-btn" id="vacBtn" style="margin-top:20px;border-color:var(--border-strong);color:var(--accent)">🏫 학교별 방학·개학 일정 보기</button>
     <h3 style="margin:26px 0 4px;font-size:15px;font-weight:800;color:var(--warn)">🟡 지연T 월요일 유료 단과 (오름패스 별도)</h3>
     <div id="summerDetail"></div>
     <div class="note" style="margin-top:16px">🎓 <b style="color:var(--accent)">고3 정규반</b>은 특강과 별도 운영 · 토 09:00-12:00 / 금·일 19:00-22:00 (가경T). 학교별 내신 클리닉 병행.</div>
@@ -449,6 +446,16 @@ footer b{color:var(--text)}
       <button class="faq-x" id="faqX">✕</button>
     </div>
     <div class="faq-body" id="faqBody"></div>
+  </div>
+</div>
+
+<!-- 학교별 방학 일정 팝업 -->
+<div class="modal" id="vacModal">
+  <div class="fbox" style="width:min(620px,93vw)">
+    <div class="faq-head"><div><h3>🏫 학교별 여름방학·개학 일정</h3></div><button class="faq-x" id="vacX">✕</button></div>
+    <div class="faq-body">
+      <table><thead><tr><th>학교</th><th>방학 기간</th><th>개학</th></tr></thead><tbody id="summerVacation"></tbody></table>
+    </div>
   </div>
 </div>
 
@@ -1081,7 +1088,11 @@ function closeFaq(){$("#faqModal").classList.remove("on");}
 $("#faqBtn").addEventListener("click",openFaq);
 $("#faqX").addEventListener("click",closeFaq);
 $("#faqModal").addEventListener("click",e=>{if(e.target===$("#faqModal"))closeFaq();});
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeFaq();});
+/* 학교별 방학 일정 팝업 */
+$("#vacBtn").addEventListener("click",()=>$("#vacModal").classList.add("on"));
+$("#vacX").addEventListener("click",()=>$("#vacModal").classList.remove("on"));
+$("#vacModal").addEventListener("click",e=>{if(e.target===$("#vacModal"))$("#vacModal").classList.remove("on");});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeFaq();$("#vacModal").classList.remove("on");}});
 openFaq();  // 홈 첫 진입 시 자동 팝업
 </script>
 </body>
