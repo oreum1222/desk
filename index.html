@@ -1139,7 +1139,7 @@ $("#faqBtn").addEventListener("click",openFaq);
 $("#faqX").addEventListener("click",closeFaq);
 $("#faqModal").addEventListener("click",e=>{if(e.target===$("#faqModal"))closeFaq();});
 /* 상담일지 폼 */
-const LOG_TEACHERS=["가경","은규","지연","예담","해솔","다미","원철","상직","시표"];
+const LOG_TEACHERS=["가경","은규","지연","다미","해솔","원철"];
 $("#logTeachers").innerHTML=LOG_TEACHERS.map(t=>`<label class="chk"><input type="checkbox" class="logTeacher" value="${t}"> ${t}T</label>`).join('');
 $("#logSend").addEventListener("click",async ()=>{
   const teachers=[...document.querySelectorAll(".logTeacher:checked")].map(x=>x.value);
