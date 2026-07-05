@@ -426,7 +426,7 @@ footer b{color:var(--text)}
     <button class="desk-btn" id="vacBtn" style="margin-top:20px;border-color:var(--border-strong);color:var(--accent)">🏫 학교별 방학·개학 일정 보기</button>
     <button class="detail-toggle" id="detailToggle">🟡 지연T 월요일 유료 단과 강의계획서 <span class="hint">오름패스 별도 · 눌러서 대상·커리큘럼 보기</span><span class="arrow">▾</span></button>
     <div id="summerDetail" class="collapsed"></div>
-    <div class="note" style="margin-top:16px">🎓 <b style="color:var(--accent)">고3 정규반</b>은 특강과 별도 운영 · 토 09:00-12:00 / 금·일 19:00-22:00 (가경T). 학교별 내신 클리닉 병행.</div>
+    <div class="note" style="margin-top:16px">🎓 <b style="color:var(--accent)">고3 정규반·약술반</b>은 <b>개강·종강 없이 매주 입반 가능</b>. 고3 정규반은 특강과 별도 운영 · 토 09:00-12:00 / 금·일 19:00-22:00 (가경T). 학교별 내신 클리닉 병행.</div>
     <div class="desk-only"><div class="tablecard" style="margin-top:16px">
       <div class="th" style="color:var(--danger)">🔴 강사 연락처 · 근무 (내부 전용)</div>
       <table><thead><tr><th>강사</th><th>연락처</th><th>근무</th></tr></thead><tbody id="summerContacts"></tbody></table>
@@ -866,7 +866,7 @@ const SUMMER={
   {day:"토",time:"18:00-21:30",teacher:"은규",subject:"현대문법",hours:"3.5H",range:"7/11 ~ 8/29"},
   {day:"일",time:"10:00-13:00",teacher:"지연",subject:"고전문학",hours:"3H"},
   {day:"일",time:"10:00-13:00",teacher:"은규",subject:"독해기초",hours:"3H",term:"6주",range:"7/12 ~ 8/16"},
-  {day:"일",time:"13:00-16:00",teacher:"원철",subject:"약술논술",hours:"3H"},
+  {day:"일",time:"13:00-16:00",teacher:"원철",subject:"약술논술",hours:"3H",term:"상시",rolling:true},
   {day:"일",time:"14:00-17:00",teacher:"은규",subject:"독해심화",hours:"3H",term:"6주",range:"7/12 ~ 8/16"},
   {day:"일",time:"18:00-21:30",teacher:"지연",subject:"현대문법",hours:"3.5H"}
  ],
@@ -1001,7 +1001,7 @@ function renderSummer(){
       const arr=groups[tm], multi=arr.length>1;
       const cards=arr.map(c=>{
         const wk=["월","화","수","목","금"].includes(c.day), t=c.term||((c.paid||(wk&&parseInt(c.time,10)<17))?"4주":"8주");
-        const rng=c.range?("📅 개강~종강 "+c.range):"📅 개강일 문의";
+        const rng=c.rolling?"🔄 매주 입반 가능 · 개강·종강 없음":c.range?("📅 개강~종강 "+c.range):"📅 개강일 문의";
         return `<div class="sd-card${multi?' multi':''}${c.paid?' paid':''}">
         <div class="sd-subj">${c.subject}<span class="sd-hours">${c.hours}</span></div>
         <div class="sd-meta">${c.teacher}T${c.paid?'<span class="sd-paid">유료</span>':''}<span class="sd-term ${t==="4주"?"t4":"t8"}">${t}</span></div>
