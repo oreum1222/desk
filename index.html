@@ -396,7 +396,7 @@ footer b{color:var(--text)}
     <div class="terms-box">
       <div class="term-row"><span class="term-tag t4">4주 완성</span><b>월·수·금 오전·오후</b> · 방학 기간 · 개강 7/15(수)·7/17(금) / 월요일 지연T 단과 7/20 → 종강 8/10~8/14</div>
       <div class="term-row"><span class="term-tag t8">8주 완성</span><b>평일 저녁·주말</b> · 7/10(금) 시작 → 8/28~30 종강</div>
-      <div class="term-note">※ 후반부는 학교별 반으로 돌아가 과정을 마무리하므로 시간이 한 번 바뀔 수 있습니다 (담당 선생님이 아이와 조율).</div>
+      <div class="term-note">※ 강좌별 기간(4·6·8주)은 각 카드의 뱃지를 확인하세요 (일부 강좌는 6주 등 상이). 후반부는 학교별 반 복귀로 시간이 한 번 바뀔 수 있습니다.</div>
     </div>
     <div id="summerBoard"></div>
 
@@ -854,15 +854,16 @@ const SUMMER={
   {day:"수",time:"10:00-13:30",teacher:"가경",subject:"현대문법",hours:"3.5H"},
   {day:"수",time:"14:00-17:30",teacher:"가경",subject:"고전문법",hours:"3.5H"},
   {day:"금",time:"10:00-13:00",teacher:"은규",subject:"문학개념어",hours:"3H"},
-  {day:"금",time:"19:00-22:00",teacher:"은규",subject:"고전문학",hours:"3H"},
+  {day:"금",time:"14:00-17:00",teacher:"은규",subject:"고전문학",hours:"3H"},
+  {day:"금",time:"18:00-21:00",teacher:"은규",subject:"고전문학",hours:"3H",term:"4주"},
   {day:"토",time:"10:00-13:30",teacher:"은규",subject:"고전문법",hours:"3.5H"},
   {day:"토",time:"10:00-13:30",teacher:"다미",subject:"고전문법",hours:"3.5H"},
-  {day:"토",time:"14:00-17:30",teacher:"은규(임시)",subject:"고전문법",hours:"3.5H"},
+  {day:"토",time:"14:00-17:30",teacher:"은규",subject:"고전문법",hours:"3.5H"},
   {day:"토",time:"18:00-21:30",teacher:"은규",subject:"현대문법",hours:"3.5H"},
   {day:"일",time:"10:00-13:00",teacher:"지연",subject:"고전문학",hours:"3H"},
-  {day:"일",time:"10:00-13:00",teacher:"은규",subject:"독해심화",hours:"3H"},
+  {day:"일",time:"10:00-13:00",teacher:"은규",subject:"독해기초",hours:"3H",term:"6주"},
   {day:"일",time:"13:00-16:00",teacher:"원철",subject:"약술논술",hours:"3H"},
-  {day:"일",time:"14:00-17:00",teacher:"은규",subject:"독해기초",hours:"3H"},
+  {day:"일",time:"14:00-17:00",teacher:"은규",subject:"독해심화",hours:"3H",term:"6주"},
   {day:"일",time:"18:00-21:30",teacher:"지연",subject:"현대문법",hours:"3.5H"}
  ],
  details:[
@@ -995,7 +996,7 @@ function renderSummer(){
     const body=Object.keys(groups).sort().map(tm=>{
       const arr=groups[tm], multi=arr.length>1;
       const cards=arr.map(c=>{
-        const wk=["월","화","수","목","금"].includes(c.day), t=(c.paid||(wk&&parseInt(c.time,10)<17))?"4주":"8주";
+        const wk=["월","화","수","목","금"].includes(c.day), t=c.term||((c.paid||(wk&&parseInt(c.time,10)<17))?"4주":"8주");
         return `<div class="sd-card${multi?' multi':''}${c.paid?' paid':''}">
         <div class="sd-subj">${c.subject}<span class="sd-hours">${c.hours}</span></div>
         <div class="sd-meta">${c.teacher}T${c.paid?'<span class="sd-paid">유료</span>':''}<span class="sd-term ${t==="4주"?"t4":"t8"}">${t}</span></div></div>`;
