@@ -201,7 +201,9 @@ td .seat{font-weight:700}
 .sd-time{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px}
 .sd-time .cc{font-size:9.5px;font-weight:700;color:var(--warn);background:rgba(229,192,123,.1);border:1px solid rgba(229,192,123,.28);padding:1px 5px;border-radius:5px;white-space:nowrap}
 .sd-cards{display:flex;gap:7px}
-.sd-card{flex:1 1 0;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:10px 11px;transition:.18s}
+.sd-card{flex:1 1 0;min-width:0;position:relative;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:10px 11px;transition:.18s}
+.sd-tip{position:absolute;bottom:calc(100% + 6px);left:0;background:#0b0f0c;border:1px solid var(--border-strong);color:var(--accent);font-size:11px;font-weight:700;padding:5px 9px;border-radius:7px;white-space:nowrap;opacity:0;transform:translateY(4px);pointer-events:none;transition:.15s;z-index:30;box-shadow:0 6px 16px -6px rgba(0,0,0,.7)}
+.sd-card:hover .sd-tip{opacity:1;transform:translateY(0)}
 .sd-card.multi{border-color:var(--border-strong)}
 .sd-card:hover{border-color:var(--accent-deep)}
 .sd-subj{font-weight:800;font-size:13.5px;letter-spacing:-.2px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:5px}
@@ -851,21 +853,21 @@ const SUMMER={
   ["용호고","7/21(화) ~ 8/6(목)",""]
  ],
  classes:[
-  {day:"월",time:"10:00-13:30",teacher:"지연",subject:"문학 심화",hours:"3.5H",paid:true},
-  {day:"월",time:"18:00-21:30",teacher:"지연",subject:"독해 쌩기초",hours:"3.5H",paid:true},
-  {day:"수",time:"10:00-13:30",teacher:"가경",subject:"현대문법",hours:"3.5H"},
-  {day:"수",time:"14:00-17:30",teacher:"가경",subject:"고전문법",hours:"3.5H"},
-  {day:"금",time:"10:00-13:00",teacher:"은규",subject:"문학개념어",hours:"3H"},
-  {day:"금",time:"14:00-17:00",teacher:"은규",subject:"고전문학",hours:"3H"},
-  {day:"금",time:"18:00-21:00",teacher:"은규",subject:"고전문학",hours:"3H",term:"4주"},
-  {day:"토",time:"10:00-13:30",teacher:"은규",subject:"고전문법",hours:"3.5H"},
-  {day:"토",time:"10:00-13:30",teacher:"다미",subject:"고전문법",hours:"3.5H"},
-  {day:"토",time:"14:00-17:30",teacher:"은규",subject:"고전문법",hours:"3.5H"},
-  {day:"토",time:"18:00-21:30",teacher:"은규",subject:"현대문법",hours:"3.5H"},
+  {day:"월",time:"10:00-13:30",teacher:"지연",subject:"문학 심화",hours:"3.5H",paid:true,range:"7/20 ~ 8/10"},
+  {day:"월",time:"18:00-21:30",teacher:"지연",subject:"독해 쌩기초",hours:"3.5H",paid:true,range:"7/20 ~ 8/10"},
+  {day:"수",time:"10:00-13:30",teacher:"가경",subject:"현대문법",hours:"3.5H",range:"7/22 ~ 8/12"},
+  {day:"수",time:"14:00-17:30",teacher:"가경",subject:"고전문법",hours:"3.5H",range:"7/22 ~ 8/12"},
+  {day:"금",time:"10:00-13:00",teacher:"은규",subject:"문학개념어",hours:"3H",range:"7/17 ~ 8/7"},
+  {day:"금",time:"14:00-17:00",teacher:"은규",subject:"고전문학",hours:"3H",range:"7/17 ~ 8/7"},
+  {day:"금",time:"18:00-21:00",teacher:"은규",subject:"고전문학",hours:"3H",term:"4주",range:"7/17 ~ 8/7"},
+  {day:"토",time:"10:00-13:30",teacher:"은규",subject:"고전문법",hours:"3.5H",range:"7/11 ~ 8/29"},
+  {day:"토",time:"10:00-13:30",teacher:"다미",subject:"고전문법",hours:"3.5H",range:"7/11 ~ 8/29"},
+  {day:"토",time:"14:00-17:30",teacher:"은규",subject:"고전문법",hours:"3.5H",range:"7/11 ~ 8/29"},
+  {day:"토",time:"18:00-21:30",teacher:"은규",subject:"현대문법",hours:"3.5H",range:"7/11 ~ 8/29"},
   {day:"일",time:"10:00-13:00",teacher:"지연",subject:"고전문학",hours:"3H"},
-  {day:"일",time:"10:00-13:00",teacher:"은규",subject:"독해기초",hours:"3H",term:"6주"},
+  {day:"일",time:"10:00-13:00",teacher:"은규",subject:"독해기초",hours:"3H",term:"6주",range:"7/12 ~ 8/16"},
   {day:"일",time:"13:00-16:00",teacher:"원철",subject:"약술논술",hours:"3H"},
-  {day:"일",time:"14:00-17:00",teacher:"은규",subject:"독해심화",hours:"3H",term:"6주"},
+  {day:"일",time:"14:00-17:00",teacher:"은규",subject:"독해심화",hours:"3H",term:"6주",range:"7/12 ~ 8/16"},
   {day:"일",time:"18:00-21:30",teacher:"지연",subject:"현대문법",hours:"3.5H"}
  ],
  details:[
@@ -999,9 +1001,11 @@ function renderSummer(){
       const arr=groups[tm], multi=arr.length>1;
       const cards=arr.map(c=>{
         const wk=["월","화","수","목","금"].includes(c.day), t=c.term||((c.paid||(wk&&parseInt(c.time,10)<17))?"4주":"8주");
+        const rng=c.range?("📅 개강~종강 "+c.range):"📅 개강일 문의";
         return `<div class="sd-card${multi?' multi':''}${c.paid?' paid':''}">
         <div class="sd-subj">${c.subject}<span class="sd-hours">${c.hours}</span></div>
-        <div class="sd-meta">${c.teacher}T${c.paid?'<span class="sd-paid">유료</span>':''}<span class="sd-term ${t==="4주"?"t4":"t8"}">${t}</span></div></div>`;
+        <div class="sd-meta">${c.teacher}T${c.paid?'<span class="sd-paid">유료</span>':''}<span class="sd-term ${t==="4주"?"t4":"t8"}">${t}</span></div>
+        <div class="sd-tip">${rng}</div></div>`;
       }).join('');
       return `<div class="sd-slot"><div class="sd-time">${tm}${multi?`<span class="cc">동시 ${arr.length}</span>`:''}</div><div class="sd-cards">${cards}</div></div>`;
     }).join('');
