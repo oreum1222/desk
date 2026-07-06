@@ -208,6 +208,7 @@ td .seat{font-weight:700}
 .sd-card:hover{border-color:var(--accent-deep)}
 .sd-subj{font-weight:800;font-size:13.5px;letter-spacing:-.2px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:5px}
 .sd-hours{font-size:9.5px;font-weight:700;color:var(--accent);background:var(--accent-soft);border:1px solid var(--border-strong);padding:1px 5px;border-radius:5px;flex:none}
+.sd-ct{font-size:10.5px;font-weight:600;color:var(--accent);margin-top:3px;font-variant-numeric:tabular-nums;letter-spacing:.2px}
 .sd-meta{font-size:11.5px;color:var(--muted);margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sd-term{font-size:9px;font-weight:700;padding:1px 5px;border-radius:5px;margin-left:5px;white-space:nowrap}
 .sd-term.t4{color:var(--accent);background:var(--accent-soft);border:1px solid var(--border-strong)}
@@ -1001,19 +1002,22 @@ function renderSummer(){
   const cols=days.map(d=>{
     const cs=SUMMER.classes.filter(c=>c.day===d);
     const groups={};
-    cs.forEach(c=>{(groups[c.time]=groups[c.time]||[]).push(c);});
-    const body=Object.keys(groups).sort().map(tm=>{
-      const arr=groups[tm], multi=arr.length>1;
+    cs.forEach(c=>{const st=c.time.split('-')[0];(groups[st]=groups[st]||[]).push(c);});
+    const body=Object.keys(groups).sort().map(st=>{
+      const arr=groups[st], multi=arr.length>1;
+      const sameFull=arr.every(c=>c.time===arr[0].time);
+      const header=sameFull?arr[0].time:st;
       const cards=arr.map(c=>{
         const wk=["월","화","수","목","금"].includes(c.day), t=c.term||((c.paid||(wk&&parseInt(c.time,10)<17))?"4주":"8주");
         const gr=c.grade?(" · 권장 "+c.grade):"";
         const rng=(c.rolling?"🔄 매주 입반 가능 · 개강·종강 없음":c.range?("📅 개강~종강 "+c.range):"📅 개강일 문의")+gr;
         return `<div class="sd-card${multi?' multi':''}${c.paid?' paid':''}">
         <div class="sd-subj">${c.subject}<span class="sd-hours">${c.hours}</span></div>
+        ${sameFull?'':`<div class="sd-ct">${c.time}</div>`}
         <div class="sd-meta">${c.teacher}T${c.grade&&c.grade[0]==='중'?'<span class="sd-mid">중등</span>':''}${c.paid?'<span class="sd-paid">유료</span>':''}<span class="sd-term ${t==="4주"?"t4":"t8"}">${t}</span></div>
         <div class="sd-tip">${rng}</div></div>`;
       }).join('');
-      return `<div class="sd-slot"><div class="sd-time">${tm}${multi?`<span class="cc">동시 ${arr.length}</span>`:''}</div><div class="sd-cards">${cards}</div></div>`;
+      return `<div class="sd-slot"><div class="sd-time">${header}${multi?`<span class="cc">동시 ${arr.length}</span>`:''}</div><div class="sd-cards">${cards}</div></div>`;
     }).join('');
     return `<div class="sd-col"><h3 class="sd-col-h">${d}요일<span class="n">${cs.length}</span></h3>${body}</div>`;
   }).join('');
