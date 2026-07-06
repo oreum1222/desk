@@ -223,6 +223,7 @@ td .seat{font-weight:700}
 @media(max-width:520px){.sd-board{grid-template-columns:1fr}}
 .sd-card.paid{border-color:rgba(229,192,123,.4);background:linear-gradient(180deg,var(--surface),rgba(229,192,123,.05))}
 .sd-paid{font-size:9px;font-weight:700;color:var(--warn);background:rgba(229,192,123,.13);border:1px solid rgba(229,192,123,.32);padding:1px 5px;border-radius:5px;margin-left:5px}
+.sd-mid{font-size:9px;font-weight:700;color:#e6a3c7;background:rgba(224,140,190,.14);border:1px solid rgba(224,140,190,.38);padding:1px 5px;border-radius:5px;margin-left:5px}
 /* 유료 단과 상세 */
 .paid-note{background:rgba(229,192,123,.09);border:1px solid rgba(229,192,123,.32);border-radius:12px;padding:13px 15px;font-size:13px;color:#e8dcc0;line-height:1.6}
 .paid-note b{color:var(--warn)}
@@ -868,7 +869,7 @@ const SUMMER={
   {day:"토",time:"18:00-21:30",teacher:"은규",subject:"현대문법",hours:"3.5H",range:"7/11 ~ 8/29",grade:"고2"},
   {day:"일",time:"10:00-13:00",teacher:"지연",subject:"고전문학",hours:"3H",term:"4주",range:"7/19 ~ 8/9",grade:"고1"},
   {day:"일",time:"10:00-13:00",teacher:"은규",subject:"독해기초",hours:"3H",term:"6주",range:"7/12 ~ 8/16",grade:"고2"},
-  {day:"일",time:"13:00-16:00",teacher:"원철",subject:"약술논술",hours:"3H",term:"상시",rolling:true},
+  {day:"일",time:"13:00-16:00",teacher:"원철",subject:"약술논술",hours:"3H",term:"상시",rolling:true,grade:"고3"},
   {day:"일",time:"14:00-17:00",teacher:"은규",subject:"독해심화",hours:"3H",term:"6주",range:"7/12 ~ 8/16",grade:"고2"},
   {day:"일",time:"18:00-21:30",teacher:"지연",subject:"현대문법",hours:"3.5H",term:"8주",range:"7/12 ~ 8/30",grade:"고2"}
  ],
@@ -1007,7 +1008,7 @@ function renderSummer(){
         const rng=(c.rolling?"🔄 매주 입반 가능 · 개강·종강 없음":c.range?("📅 개강~종강 "+c.range):"📅 개강일 문의")+gr;
         return `<div class="sd-card${multi?' multi':''}${c.paid?' paid':''}">
         <div class="sd-subj">${c.subject}<span class="sd-hours">${c.hours}</span></div>
-        <div class="sd-meta">${c.teacher}T${c.paid?'<span class="sd-paid">유료</span>':''}<span class="sd-term ${t==="4주"?"t4":"t8"}">${t}</span></div>
+        <div class="sd-meta">${c.teacher}T${c.grade&&c.grade[0]==='중'?'<span class="sd-mid">중등</span>':''}${c.paid?'<span class="sd-paid">유료</span>':''}<span class="sd-term ${t==="4주"?"t4":"t8"}">${t}</span></div>
         <div class="sd-tip">${rng}</div></div>`;
       }).join('');
       return `<div class="sd-slot"><div class="sd-time">${tm}${multi?`<span class="cc">동시 ${arr.length}</span>`:''}</div><div class="sd-cards">${cards}</div></div>`;
