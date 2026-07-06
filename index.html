@@ -853,22 +853,24 @@ const SUMMER={
   ["용호고","7/21(화) ~ 8/6(목)",""]
  ],
  classes:[
-  {day:"월",time:"10:00-13:30",teacher:"지연",subject:"문학 심화",hours:"3.5H",paid:true,range:"7/20 ~ 8/10"},
-  {day:"월",time:"18:00-21:30",teacher:"지연",subject:"독해 쌩기초",hours:"3.5H",paid:true,range:"7/20 ~ 8/10"},
-  {day:"수",time:"10:00-13:30",teacher:"가경",subject:"현대문법",hours:"3.5H",range:"7/15 ~ 8/12"},
-  {day:"수",time:"14:00-17:30",teacher:"가경",subject:"고전문법",hours:"3.5H",range:"7/15 ~ 8/12"},
-  {day:"금",time:"10:00-13:00",teacher:"은규",subject:"문학개념어",hours:"3H",range:"7/17 ~ 8/7"},
-  {day:"금",time:"14:00-17:00",teacher:"은규",subject:"고전문학",hours:"3H",range:"7/17 ~ 8/7"},
-  {day:"금",time:"18:00-21:00",teacher:"은규",subject:"고전문학",hours:"3H",term:"4주",range:"7/17 ~ 8/7"},
-  {day:"토",time:"10:00-13:30",teacher:"은규",subject:"고전문법",hours:"3.5H",range:"7/11 ~ 8/29"},
-  {day:"토",time:"10:00-13:30",teacher:"다미",subject:"고전문법",hours:"3.5H",range:"7/11 ~ 8/29"},
-  {day:"토",time:"14:00-17:30",teacher:"은규",subject:"고전문법",hours:"3.5H",range:"7/11 ~ 8/29"},
-  {day:"토",time:"18:00-21:30",teacher:"은규",subject:"현대문법",hours:"3.5H",range:"7/11 ~ 8/29"},
-  {day:"일",time:"10:00-13:00",teacher:"지연",subject:"고전문학",hours:"3H"},
-  {day:"일",time:"10:00-13:00",teacher:"은규",subject:"독해기초",hours:"3H",term:"6주",range:"7/12 ~ 8/16"},
+  {day:"월",time:"10:00-13:00",teacher:"지연",subject:"문학 심화",hours:"3H",paid:true,range:"7/20 ~ 8/10",grade:"학년무관"},
+  {day:"월",time:"18:00-21:00",teacher:"지연",subject:"독해 쌩기초",hours:"3H",paid:true,range:"7/20 ~ 8/10",grade:"학년무관"},
+  {day:"수",time:"10:00-13:30",teacher:"가경",subject:"현대문법",hours:"3.5H",range:"7/22 ~ 8/12",grade:"학년무관"},
+  {day:"수",time:"14:00-17:30",teacher:"가경",subject:"고전문법",hours:"3.5H",range:"7/22 ~ 8/12",grade:"학년무관"},
+  {day:"목",time:"13:30-16:30",teacher:"해솔",subject:"문학개념어",hours:"3H",term:"7주",range:"7/18 ~ 8/29",grade:"중3"},
+  {day:"목",time:"17:00-20:00",teacher:"해솔",subject:"문학개념어",hours:"3H",term:"7주",range:"7/18 ~ 8/29",grade:"중2"},
+  {day:"금",time:"10:00-13:00",teacher:"은규",subject:"문학개념어",hours:"3H",range:"7/17 ~ 8/7",grade:"고1"},
+  {day:"금",time:"14:00-17:00",teacher:"은규",subject:"고전문학",hours:"3H",range:"7/17 ~ 8/7",grade:"고1"},
+  {day:"금",time:"18:00-21:00",teacher:"은규",subject:"고전문학",hours:"3H",term:"4주",range:"7/17 ~ 8/7",grade:"고1"},
+  {day:"토",time:"10:00-13:30",teacher:"은규",subject:"고전문법",hours:"3.5H",range:"7/11 ~ 8/29",grade:"고1"},
+  {day:"토",time:"10:00-13:30",teacher:"다미",subject:"고전문법",hours:"3.5H",range:"7/11 ~ 8/29",grade:"고1"},
+  {day:"토",time:"14:00-17:30",teacher:"은규",subject:"고전문법",hours:"3.5H",range:"7/11 ~ 8/29",grade:"고1"},
+  {day:"토",time:"18:00-21:30",teacher:"은규",subject:"현대문법",hours:"3.5H",range:"7/11 ~ 8/29",grade:"고2"},
+  {day:"일",time:"10:00-13:00",teacher:"지연",subject:"고전문학",hours:"3H",term:"4주",range:"7/19 ~ 8/9",grade:"고1"},
+  {day:"일",time:"10:00-13:00",teacher:"은규",subject:"독해기초",hours:"3H",term:"6주",range:"7/12 ~ 8/16",grade:"고2"},
   {day:"일",time:"13:00-16:00",teacher:"원철",subject:"약술논술",hours:"3H",term:"상시",rolling:true},
-  {day:"일",time:"14:00-17:00",teacher:"은규",subject:"독해심화",hours:"3H",term:"6주",range:"7/12 ~ 8/16"},
-  {day:"일",time:"18:00-21:30",teacher:"지연",subject:"현대문법",hours:"3.5H"}
+  {day:"일",time:"14:00-17:00",teacher:"은규",subject:"독해심화",hours:"3H",term:"6주",range:"7/12 ~ 8/16",grade:"고2"},
+  {day:"일",time:"18:00-21:30",teacher:"지연",subject:"현대문법",hours:"3.5H",term:"8주",range:"7/12 ~ 8/30",grade:"고2"}
  ],
  details:[
   {sub:"수능 비문학 독해 쌩기초 4주 완성",teacher:"지연T",time:"월 18:00-21:30 (3.5H)",slogan:"지금부터, 연속상승!",
@@ -1001,7 +1003,8 @@ function renderSummer(){
       const arr=groups[tm], multi=arr.length>1;
       const cards=arr.map(c=>{
         const wk=["월","화","수","목","금"].includes(c.day), t=c.term||((c.paid||(wk&&parseInt(c.time,10)<17))?"4주":"8주");
-        const rng=c.rolling?"🔄 매주 입반 가능 · 개강·종강 없음":c.range?("📅 개강~종강 "+c.range):"📅 개강일 문의";
+        const gr=c.grade?(" · 권장 "+c.grade):"";
+        const rng=(c.rolling?"🔄 매주 입반 가능 · 개강·종강 없음":c.range?("📅 개강~종강 "+c.range):"📅 개강일 문의")+gr;
         return `<div class="sd-card${multi?' multi':''}${c.paid?' paid':''}">
         <div class="sd-subj">${c.subject}<span class="sd-hours">${c.hours}</span></div>
         <div class="sd-meta">${c.teacher}T${c.paid?'<span class="sd-paid">유료</span>':''}<span class="sd-term ${t==="4주"?"t4":"t8"}">${t}</span></div>
