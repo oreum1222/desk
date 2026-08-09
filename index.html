@@ -426,6 +426,7 @@ footer b{color:var(--text)}
     </div>
 
     <button class="desk-btn" id="vacBtn" style="margin-top:20px;border-color:var(--border-strong);color:var(--accent)">🏫 학교별 방학·개학 일정 보기</button>
+    <button class="desk-btn" id="fallBtn" style="margin-top:12px;border-color:var(--border-strong);color:var(--accent)">🍁 2학기 정규반 개강 안내 (은규T) 보기</button>
     <button class="detail-toggle" id="detailToggle">🟡 지연T 월요일 유료 단과 강의계획서 <span class="hint">오름패스 별도 · 눌러서 대상·커리큘럼 보기</span><span class="arrow">▾</span></button>
     <div id="summerDetail" class="collapsed"></div>
     <div class="note" style="margin-top:16px">🎓 <b style="color:var(--accent)">고3 정규반·약술반</b>은 <b>개강·종강 없이 매주 입반 가능</b>. 고3 정규반은 특강과 별도 운영 · 토 09:00-12:00 / 금·일 19:00-22:00 (가경T). 학교별 내신 클리닉 병행.</div>
@@ -512,6 +513,14 @@ footer b{color:var(--text)}
     <div class="faq-body">
       <table><thead><tr><th>학교</th><th>방학 기간</th><th>개학</th></tr></thead><tbody id="summerVacation"></tbody></table>
     </div>
+  </div>
+</div>
+
+<!-- 2학기 정규반 개강 안내 팝업 -->
+<div class="modal" id="fallModal">
+  <div class="fbox" style="width:min(680px,93vw)">
+    <div class="faq-head"><div><h3>🍁 2학기 정규반 개강 안내 · 은규T</h3><p class="fsub">재등록·신규 등록 문의 시 참고</p></div><button class="faq-x" id="fallX">✕</button></div>
+    <div class="faq-body" id="fallBody"></div>
   </div>
 </div>
 
@@ -996,6 +1005,34 @@ function renderTime(){
   });
   wrap.innerHTML=`<div class="tt-board">${cols}</div>`;
 }
+/* ===== 2학기 정규반 개강 안내 (은규T) ===== */
+const FALL={
+  teacher:"은규T",
+  go1:[
+    ["군포고 1반","8/22 (토) 12:00"],
+    ["군포고 2반","8/22 (토) 14:00"],
+    ["산본고 1반","8/20 (목) 19:00"],
+    ["산본고 2반","8/21 (금) 19:00"],
+    ["흥진고","8/22 (토) 10:00"]
+  ],
+  go2:[
+    ["군포고 1반","8/22 (토) 17:00"],
+    ["군포고 2반","8/23 (일) 14:00"],
+    ["군포중앙고","8/22 (토) 19:00"],
+    ["산본고 1반","8/26 (수) 17:00"],
+    ["산본고 2반","8/23 (일) 19:00"],
+    ["용호고","8/23 (일) 12:00"],
+    ["흥진고","8/23 (일) 10:00"]
+  ]
+};
+function renderFall(){
+  const mk=rows=>`<table><thead><tr><th>학교 · 반</th><th>개강</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r[0]}</b></td><td style="color:var(--accent);white-space:nowrap">${r[1]}</td></tr>`).join('')}</tbody></table>`;
+  const el=$("#fallBody"); if(!el) return;
+  el.innerHTML=
+    `<h4 style="margin:2px 0 8px;color:var(--accent)">고1</h4>${mk(FALL.go1)}`+
+    `<h4 style="margin:20px 0 8px;color:var(--accent)">고2</h4>${mk(FALL.go2)}`+
+    `<div class="note" style="margin-top:16px">여름학기는 <b style="color:var(--accent)">8/19(수)</b>까지 순차 종강 · 2학기 정규반은 <b style="color:var(--accent)">8/20(목)</b>부터 순차 개강.<br>위 일정은 <b>${FALL.teacher}</b> 담당 반 기준입니다. 재등록·신규 문의 시 참고.</div>`;
+}
 function renderSummer(){
   const order=["월","화","수","목","금","토","일"];
   const days=order.filter(d=>SUMMER.classes.some(c=>c.day===d));
@@ -1138,7 +1175,7 @@ function renderFAQ(){
     c.items.map(it=>`<div class="fq-item"><div class="fq-q">${it.q}</div><ul class="fq-a">${it.a.map(a=>`<li>${a}</li>`).join('')}</ul></div>`).join('')
   ).join('');
 }
-function renderAll(){applyCaps(CARDS);render();renderTime();renderSummer();renderFit();renderCurri();}
+function renderAll(){applyCaps(CARDS);render();renderTime();renderSummer();renderFall();renderFit();renderCurri();}
 async function boot(){
   if(WEBAPP_URL){
     try{
@@ -1188,7 +1225,11 @@ $("#detailToggle").addEventListener("click",()=>{
 $("#vacBtn").addEventListener("click",()=>$("#vacModal").classList.add("on"));
 $("#vacX").addEventListener("click",()=>$("#vacModal").classList.remove("on"));
 $("#vacModal").addEventListener("click",e=>{if(e.target===$("#vacModal"))$("#vacModal").classList.remove("on");});
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeFaq();$("#vacModal").classList.remove("on");}});
+/* 2학기 정규반 개강 안내 팝업 */
+$("#fallBtn").addEventListener("click",()=>$("#fallModal").classList.add("on"));
+$("#fallX").addEventListener("click",()=>$("#fallModal").classList.remove("on"));
+$("#fallModal").addEventListener("click",e=>{if(e.target===$("#fallModal"))$("#fallModal").classList.remove("on");});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeFaq();$("#vacModal").classList.remove("on");$("#fallModal").classList.remove("on");}});
 openFaq();  // 홈 첫 진입 시 자동 팝업
 </script>
 </body>
