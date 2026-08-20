@@ -281,11 +281,19 @@ td .seat{font-weight:700}
 .calc-out .ctot .lbl{font-size:15px;font-weight:800;color:var(--text)}
 .calc-out .ctot .amt{font-size:27px;font-weight:800;color:var(--accent);letter-spacing:-.01em}
 .calc-out .cnext{margin-top:6px;font-size:12px;color:var(--muted);text-align:right}
-.calc-checks{display:flex;flex-direction:column;gap:8px}
-.calc-checks .chk{width:100%;justify-content:flex-start;gap:11px;padding:11px 14px}
+.calc-checks,.calc-progs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.calc-checks .chk{width:auto;justify-content:flex-start;gap:9px;padding:11px 13px;align-items:center}
 .calc-checks .chk input{flex:none}
-.calc-checks .chk .ct{white-space:nowrap;line-height:1.35}
-.calc-checks .chk em{flex:none;font-style:normal;font-weight:800;color:var(--accent);font-size:12.5px;white-space:nowrap}
+.calc-checks .chk .ct{white-space:normal;line-height:1.3;font-size:12.5px}
+.calc-checks .chk em{font-style:normal;font-weight:800;color:var(--accent);white-space:nowrap}
+.prog-row{display:flex;flex-direction:column;gap:8px}
+.prog-row .chk{width:auto;justify-content:flex-start;gap:9px;padding:11px 13px}
+.prog-row .chk input{flex:none}
+.prog-row .chk .ct{font-size:12.5px;line-height:1.3}
+.prog-row.off{opacity:.5}
+.rem-wrap{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12.5px;color:var(--muted);white-space:nowrap}
+.calc-progs .rem{width:62px;text-align:center;padding:8px 6px}
+@media(max-width:600px){.calc-checks,.calc-progs{grid-template-columns:1fr}}
 .log-send{width:100%;background:var(--accent);color:#0c1410;font-family:inherit;font-weight:800;font-size:14px;padding:13px;border:0;border-radius:11px;cursor:pointer;transition:.15s;margin-top:4px}
 .log-send:hover{filter:brightness(1.08)}
 .log-send:disabled{opacity:.55;cursor:default}
@@ -421,24 +429,28 @@ footer b{color:var(--text)}
 
     <div class="log-card calc-card" style="margin-top:0">
       <h3 class="log-title">💰 수강료 계산기</h3>
-      <p class="log-desc">중간 입학 시 그 달 <b>남은 회차</b> 기준으로 자동 계산합니다. (월 4회 기준, 5회차는 서비스 · 할인 먼저 적용 후 회차 나눔)</p>
-      <div class="calc-grid">
-        <div class="calc-field"><label>구분</label>
-          <select id="calcProg">
-            <option data-base="300000" data-type="hs">고등부 정규 · 30만 (회당 7.5만)</option>
-            <option data-base="260000" data-type="ms">중등부 · 26만 (회당 6.5만)</option>
-            <option data-base="284000" data-type="yak">약술논술 · 28.4만 (회당 7.1만)</option>
-          </select>
-        </div>
-        <div class="calc-field"><label>이번 달 남은 회차</label>
-          <input id="calcSessions" type="number" min="1" max="5" step="1" value="4" />
+      <p class="log-desc">중간 입학 시 각 수업의 <b>남은 회차</b> 기준으로 자동 계산합니다. (수업 복수 선택 가능 · 월 4회 기준, 5회차는 서비스 · 할인 먼저 적용 후 회차 나눔)</p>
+      <div class="log-field"><label>수업 · 복수 선택 가능 (각 수업의 이번 달 남은 회차 입력)</label>
+        <div class="calc-progs">
+          <div class="prog-row">
+            <label class="chk prog"><input type="checkbox" class="pgm" data-base="300000" data-key="hs" checked><span class="ct">고등부 정규 · 30만</span></label>
+            <span class="rem-wrap">남은 <input type="number" class="rem" min="1" max="5" step="1" value="4"> 회</span>
+          </div>
+          <div class="prog-row">
+            <label class="chk prog"><input type="checkbox" class="pgm" data-base="260000" data-key="ms"><span class="ct">중등부 · 26만</span></label>
+            <span class="rem-wrap">남은 <input type="number" class="rem" min="1" max="5" step="1" value="4"> 회</span>
+          </div>
+          <div class="prog-row">
+            <label class="chk prog"><input type="checkbox" class="pgm" data-base="284000" data-key="yak"><span class="ct">약술논술 · 28.4만</span></label>
+            <span class="rem-wrap">남은 <input type="number" class="rem" min="1" max="5" step="1" value="4"> 회</span>
+          </div>
         </div>
       </div>
       <div class="log-field"><label>할인 적용 · 여러 개 체크해도 가장 큰 할인 1개만 적용</label>
         <div class="log-checks calc-checks">
-          <label class="chk"><input type="checkbox" id="dSib"><span class="ct">형제·남매·자매 할인</span><em>−2만</em></label>
-          <label class="chk"><input type="checkbox" id="dPkg"><span class="ct">약술 + 고밀도수학 패키지</span><em>−3.4만</em></label>
-          <label class="chk"><input type="checkbox" id="dCombo"><span class="ct">고3 정규반 + 약술 동시수강</span><em>−10%</em></label>
+          <label class="chk"><input type="checkbox" id="dSib"><span class="ct">형제·남매·자매 <em>−2만</em></span></label>
+          <label class="chk"><input type="checkbox" id="dPkg"><span class="ct">약술+고밀도수학 <em>−3.4만</em></span></label>
+          <label class="chk"><input type="checkbox" id="dCombo"><span class="ct">정규+약술 동시 <em>−10%</em></span></label>
         </div>
       </div>
       <div class="calc-out" id="calcOut"></div>
@@ -1321,42 +1333,58 @@ $("#fallModal").addEventListener("click",e=>{if(e.target===$("#fallModal"))$("#f
 $("#schBtn").addEventListener("click",()=>$("#schModal").classList.add("on"));
 $("#schX").addEventListener("click",()=>$("#schModal").classList.remove("on"));
 $("#schModal").addEventListener("click",e=>{if(e.target===$("#schModal"))$("#schModal").classList.remove("on");});
-/* 수강료 계산기 */
+/* 수강료 계산기 (수업 복수 선택) */
 function wonFmt(n){return Math.round(n).toLocaleString("ko-KR")+"원";}
+const PGNAME={hs:"고등부 정규",ms:"중등부",yak:"약술논술"};
 function calcFee(){
-  const sel=$("#calcProg"); if(!sel) return;
-  const opt=sel.options[sel.selectedIndex];
-  const base=+opt.dataset.base;
-  let remaining=parseInt($("#calcSessions").value,10); if(isNaN(remaining))remaining=4;
-  remaining=Math.max(1,Math.min(5,remaining));
-  const opts=[];
-  if($("#dSib").checked) opts.push(["형제·남매·자매 할인","−20,000원",20000]);
-  if($("#dPkg").checked) opts.push(["약술+고밀도수학 패키지","−34,000원",34000]);
-  if($("#dCombo").checked){ const a=Math.round(base*0.1); opts.push(["동시수강 −10%","−"+wonFmt(a),a]); }
-  let monthly=base, best=null, multi=false;
-  if(opts.length){
-    best=opts.reduce((x,y)=>y[2]>x[2]?y:x);
-    monthly=base-best[2];
-    multi=opts.length>1;
+  const out=$("#calcOut"); if(!out) return;
+  const progs=[];
+  document.querySelectorAll(".prog-row").forEach(r=>{
+    const cb=r.querySelector(".pgm"), rem=r.querySelector(".rem");
+    rem.disabled=!cb.checked; r.classList.toggle("off",!cb.checked);
+    if(cb.checked){
+      let rm=parseInt(rem.value,10); if(isNaN(rm))rm=4; rm=Math.max(1,Math.min(5,rm));
+      progs.push({key:cb.dataset.key, base:+cb.dataset.base, rem:rm});
+    }
+  });
+  if(!progs.length){ out.innerHTML=`<div class="crow"><span>수업을 선택하세요</span><b>—</b></div>`; return; }
+  const has=k=>progs.some(p=>p.key===k);
+  const cands=[];
+  if($("#dSib").checked) cands.push({type:"sib",label:"형제·남매·자매 할인",val:20000});
+  if($("#dPkg").checked && has("yak")) cands.push({type:"pkg",label:"약술+고밀도수학 패키지",val:34000});
+  if($("#dCombo").checked && has("hs") && has("yak")){
+    const v=Math.round((progs.find(p=>p.key==="hs").base+progs.find(p=>p.key==="yak").base)*0.1);
+    cands.push({type:"combo",label:"고등부 정규+약술 동시수강 −10%",val:v});
   }
-  if(monthly<0) monthly=0;
-  const perSession=Math.round(monthly/4);
-  const chargeable=Math.min(remaining,4);
-  const total=perSession*chargeable;
-  const svc = remaining>4 ? " · 5회차 서비스 1회" : "";
-  const discHtml = best
-    ? `<div class="crow"><span class="cdisc">${best[0]}</span><b class="cdisc">${best[1]}</b></div>`+(multi?`<div class="crow" style="font-size:11.5px;color:var(--warn)"><span>여러 할인 체크됨 → 가장 큰 할인만 적용</span><b></b></div>`:"")
+  const applied=cands.length?cands.reduce((x,y)=>y.val>x.val?y:x):null;
+  const multi=cands.length>1;
+  const topKey=progs.reduce((a,p)=>p.base>a.base?p:a).key;
+  let total=0, nextMonthly=0, rows="";
+  progs.forEach(p=>{
+    let m=p.base;
+    if(applied){
+      if(applied.type==="combo" && (p.key==="hs"||p.key==="yak")) m=Math.round(m*0.9);
+      else if(applied.type==="pkg" && p.key==="yak") m-=34000;
+      else if(applied.type==="sib" && p.key===topKey) m-=20000;
+    }
+    if(m<0)m=0;
+    const per=Math.round(m/4), charge=per*Math.min(p.rem,4);
+    total+=charge; nextMonthly+=m;
+    const svc=p.rem>4?" · 5회차 서비스":"";
+    rows+=`<div class="crow"><span>${PGNAME[p.key]} · 남은 ${p.rem}회${svc}</span><b>${wonFmt(charge)}</b></div>`;
+  });
+  const discHtml = applied
+    ? `<div class="crow"><span class="cdisc">${applied.label}</span><b class="cdisc">−${wonFmt(applied.val)}</b></div>`+(multi?`<div class="crow" style="font-size:11.5px;color:var(--warn)"><span>여러 할인 체크됨 → 가장 큰 할인만 적용</span><b></b></div>`:"")
     : `<div class="crow"><span>적용 할인</span><b>없음</b></div>`;
-  $("#calcOut").innerHTML=
-    `<div class="crow"><span>기준 월 수강료</span><b>${wonFmt(base)}</b></div>`+
+  out.innerHTML=
+    rows+
+    `<div style="height:7px"></div>`+
     discHtml+
-    `<div class="crow"><span>할인 후 월 수강료</span><b>${wonFmt(monthly)}</b></div>`+
-    `<div class="crow"><span>회차당 단가</span><b>${wonFmt(perSession)}</b></div>`+
-    `<div class="crow"><span>청구 회차</span><b>남은 ${remaining}회 → ${chargeable}회 청구${svc}</b></div>`+
-    `<div class="ctot"><span class="lbl">이번 달 청구액</span><span class="amt">${wonFmt(total)}</span></div>`+
-    `<div class="cnext">다음 달부터 정상 ${wonFmt(monthly)} / 월</div>`;
+    `<div class="ctot"><span class="lbl">이번 달 청구액${progs.length>1?" (합계)":""}</span><span class="amt">${wonFmt(total)}</span></div>`+
+    `<div class="cnext">다음 달부터 정상 ${wonFmt(nextMonthly)} / 월</div>`;
 }
-["#calcProg","#calcSessions","#dSib","#dPkg","#dCombo"].forEach(s=>{const el=$(s); if(el) el.addEventListener("input",calcFee);});
+["#dSib","#dPkg","#dCombo"].forEach(s=>{const el=$(s); if(el) el.addEventListener("input",calcFee);});
+document.querySelectorAll(".pgm,.rem").forEach(el=>el.addEventListener("input",calcFee));
 calcFee();
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeFaq();$("#vacModal").classList.remove("on");$("#fallModal").classList.remove("on");$("#schModal").classList.remove("on");}});
 openFaq();  // 홈 첫 진입 시 자동 팝업
