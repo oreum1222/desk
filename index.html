@@ -268,6 +268,19 @@ td .seat{font-weight:700}
 .chk:has(input:checked){border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
 .log-field textarea{width:100%;min-height:62px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:13.5px;padding:11px 12px;border-radius:10px;outline:none;resize:vertical;line-height:1.6}
 .log-field textarea:focus{border-color:var(--accent)}
+.calc-card select,.calc-card input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:13.5px;padding:10px 12px;border-radius:10px;outline:none}
+.calc-card select:focus,.calc-card input:focus{border-color:var(--accent)}
+.calc-grid{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.calc-grid .calc-field{flex:1;min-width:190px;margin-bottom:0}
+.calc-grid .calc-field>label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;letter-spacing:.3px}
+.calc-out{margin-top:4px;background:var(--bg);border:1px solid var(--border-strong);border-radius:12px;padding:15px 18px;font-size:13.5px;line-height:1.7}
+.calc-out .crow{display:flex;justify-content:space-between;gap:12px;color:var(--muted);padding:1px 0}
+.calc-out .crow b{color:var(--text);font-weight:700}
+.calc-out .cdisc,.calc-out .crow b.cdisc{color:var(--accent)}
+.calc-out .ctot{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:baseline}
+.calc-out .ctot .lbl{font-size:15px;font-weight:800;color:var(--text)}
+.calc-out .ctot .amt{font-size:27px;font-weight:800;color:var(--accent);letter-spacing:-.01em}
+.calc-out .cnext{margin-top:6px;font-size:12px;color:var(--muted);text-align:right}
 .log-send{width:100%;background:var(--accent);color:#0c1410;font-family:inherit;font-weight:800;font-size:14px;padding:13px;border:0;border-radius:11px;cursor:pointer;transition:.15s;margin-top:4px}
 .log-send:hover{filter:brightness(1.08)}
 .log-send:disabled{opacity:.55;cursor:default}
@@ -399,7 +412,33 @@ footer b{color:var(--text)}
 
   <!-- ░░ 대시보드 ░░ -->
   <section class="panel active" id="dash">
-    <p class="sub">데스크 상담 대시보드 — 상담 내역 전송 · 2학기/학사 일정 · 강사 연락처.</p>
+    <p class="sub">데스크 상담 대시보드 — 수강료 계산 · 상담 내역 전송 · 2학기/학사 일정 · 강사 연락처.</p>
+
+    <div class="log-card calc-card" style="margin-top:0">
+      <h3 class="log-title">💰 수강료 계산기</h3>
+      <p class="log-desc">중간 입학 시 그 달 <b>남은 회차</b> 기준으로 자동 계산합니다. (월 4회 기준, 5회차는 서비스 · 할인 먼저 적용 후 회차 나눔)</p>
+      <div class="calc-grid">
+        <div class="calc-field"><label>구분</label>
+          <select id="calcProg">
+            <option data-base="300000" data-type="hs">고등부 정규 · 30만 (회당 7.5만)</option>
+            <option data-base="260000" data-type="ms">중등부 · 26만 (회당 6.5만)</option>
+            <option data-base="300000" data-type="go3">고3 수능 정규반 · 30만 (회당 7.5만)</option>
+            <option data-base="284000" data-type="yak">약술논술 · 28.4만 (회당 7.1만)</option>
+          </select>
+        </div>
+        <div class="calc-field"><label>이번 달 남은 회차</label>
+          <input id="calcSessions" type="number" min="1" max="5" step="1" value="4" />
+        </div>
+      </div>
+      <div class="log-field"><label>할인 적용 (중복 선택 가능)</label>
+        <div class="log-checks">
+          <label class="chk"><input type="checkbox" id="dSib"> 형제·남매·자매 (−2만)</label>
+          <label class="chk"><input type="checkbox" id="dPkg"> 약술 + 고밀도수학 패키지 (−3.4만)</label>
+          <label class="chk"><input type="checkbox" id="dCombo"> 고3 정규반 + 약술 동시수강 (−10%)</label>
+        </div>
+      </div>
+      <div class="calc-out" id="calcOut"></div>
+    </div>
 
     <div class="log-card">
       <h3 class="log-title">📞 상담 내역 보내기</h3>
@@ -1278,6 +1317,37 @@ $("#fallModal").addEventListener("click",e=>{if(e.target===$("#fallModal"))$("#f
 $("#schBtn").addEventListener("click",()=>$("#schModal").classList.add("on"));
 $("#schX").addEventListener("click",()=>$("#schModal").classList.remove("on"));
 $("#schModal").addEventListener("click",e=>{if(e.target===$("#schModal"))$("#schModal").classList.remove("on");});
+/* 수강료 계산기 */
+function wonFmt(n){return Math.round(n).toLocaleString("ko-KR")+"원";}
+function calcFee(){
+  const sel=$("#calcProg"); if(!sel) return;
+  const opt=sel.options[sel.selectedIndex];
+  const base=+opt.dataset.base;
+  let remaining=parseInt($("#calcSessions").value,10); if(isNaN(remaining))remaining=4;
+  remaining=Math.max(1,Math.min(5,remaining));
+  let monthly=base; const applied=[];
+  if($("#dCombo").checked){ monthly=Math.round(monthly*0.9); applied.push(["동시수강 −10%","−"+wonFmt(base-monthly)]); }
+  if($("#dPkg").checked){ monthly-=34000; applied.push(["고밀도수학 패키지","−34,000원"]); }
+  if($("#dSib").checked){ monthly-=20000; applied.push(["형제·남매·자매","−20,000원"]); }
+  if(monthly<0) monthly=0;
+  const perSession=Math.round(monthly/4);
+  const chargeable=Math.min(remaining,4);
+  const total=perSession*chargeable;
+  const svc = remaining>4 ? " · 5회차 서비스 1회" : "";
+  const discHtml = applied.length
+    ? applied.map(a=>`<div class="crow"><span class="cdisc">${a[0]}</span><b class="cdisc">${a[1]}</b></div>`).join("")
+    : `<div class="crow"><span>적용 할인</span><b>없음</b></div>`;
+  $("#calcOut").innerHTML=
+    `<div class="crow"><span>기준 월 수강료</span><b>${wonFmt(base)}</b></div>`+
+    discHtml+
+    `<div class="crow"><span>할인 후 월 수강료</span><b>${wonFmt(monthly)}</b></div>`+
+    `<div class="crow"><span>회차당 단가</span><b>${wonFmt(perSession)}</b></div>`+
+    `<div class="crow"><span>청구 회차</span><b>남은 ${remaining}회 → ${chargeable}회 청구${svc}</b></div>`+
+    `<div class="ctot"><span class="lbl">이번 달 청구액</span><span class="amt">${wonFmt(total)}</span></div>`+
+    `<div class="cnext">다음 달부터 정상 ${wonFmt(monthly)} / 월</div>`;
+}
+["#calcProg","#calcSessions","#dSib","#dPkg","#dCombo"].forEach(s=>{const el=$(s); if(el) el.addEventListener("input",calcFee);});
+calcFee();
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeFaq();$("#vacModal").classList.remove("on");$("#fallModal").classList.remove("on");$("#schModal").classList.remove("on");}});
 openFaq();  // 홈 첫 진입 시 자동 팝업
 </script>
