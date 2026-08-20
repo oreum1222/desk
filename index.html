@@ -361,11 +361,12 @@ footer b{color:var(--text)}
 </div></header>
 
 <nav class="tabs"><div class="wrap tabs-in" id="tabs">
-  <button class="tab active" data-tab="summer">☀ 여름방학 특강</button>
+  <button class="tab active" data-tab="dash">🏠 대시보드</button>
   <button class="tab" data-tab="schools">학교별 상담</button>
   <button class="tab" data-tab="time">시간표 · 여석</button>
   <button class="tab" data-tab="fit">진단 결과 해설</button>
   <button class="tab" data-tab="curri">운영 · 커리큘럼</button>
+  <button class="tab" data-tab="summer">☀ 여름방학 특강</button>
 </div></nav>
 
 <main class="wrap">
@@ -396,15 +397,9 @@ footer b{color:var(--text)}
     <div id="timeTables"></div>
   </section>
 
-  <!-- ░░ 2026 여름방학 ░░ -->
-  <section class="panel active" id="summer">
-    <p class="sub">2026 여름방학 특강 시간표 — 신규·재원생 특강 상담용.</p>
-    <div class="terms-box">
-      <div class="term-row"><span class="term-tag t4">4주 완성</span><b>월·수·금 오전·오후</b> · 방학 기간 · 개강 7/15(수)·7/17(금) / 월요일 지연T 단과 7/20 → 종강 8/10~8/14</div>
-      <div class="term-row"><span class="term-tag t8">8주 완성</span><b>평일 저녁·주말</b> · 7/10(금) 시작 → 8/28~30 종강</div>
-      <div class="term-note">※ 강좌별 기간(4·6·8주)은 각 카드의 뱃지를 확인하세요 (일부 강좌는 6주 등 상이). 후반부는 학교별 반 복귀로 시간이 한 번 바뀔 수 있습니다.</div>
-    </div>
-    <div id="summerBoard"></div>
+  <!-- ░░ 대시보드 ░░ -->
+  <section class="panel active" id="dash">
+    <p class="sub">데스크 상담 대시보드 — 상담 내역 전송 · 2학기/학사 일정 · 강사 연락처.</p>
 
     <div class="log-card">
       <h3 class="log-title">📞 상담 내역 보내기</h3>
@@ -425,16 +420,28 @@ footer b{color:var(--text)}
       <div class="log-status" id="logStatus"></div>
     </div>
 
-    <button class="desk-btn" id="vacBtn" style="margin-top:20px;border-color:var(--border-strong);color:var(--accent)">🏫 학교별 방학·개학 일정 보기</button>
-    <button class="desk-btn" id="fallBtn" style="margin-top:12px;border-color:var(--border-strong);color:var(--accent)">🍁 2학기 정규반 개강 안내 (은규T) 보기</button>
+    <button class="desk-btn" id="fallBtn" style="margin-top:18px;border-color:var(--border-strong);color:var(--accent)">🍁 2학기 정규반 개강 안내 (은규T) 보기</button>
     <button class="desk-btn" id="schBtn" style="margin-top:12px;border-color:var(--border-strong);color:var(--accent)">🗓 학교별 3·4차고사 · 겨울방학 일정 보기</button>
-    <button class="detail-toggle" id="detailToggle">🟡 지연T 월요일 유료 단과 강의계획서 <span class="hint">오름패스 별도 · 눌러서 대상·커리큘럼 보기</span><span class="arrow">▾</span></button>
-    <div id="summerDetail" class="collapsed"></div>
-    <div class="note" style="margin-top:16px">🎓 <b style="color:var(--accent)">고3 정규반·약술반</b>은 <b>개강·종강 없이 매주 입반 가능</b>. 고3 정규반은 특강과 별도 운영 · 토 09:00-12:00 / 금·일 19:00-22:00 (가경T). 학교별 내신 클리닉 병행.</div>
     <div class="desk-only"><div class="tablecard" style="margin-top:16px">
       <div class="th" style="color:var(--danger)">🔴 강사 연락처 · 근무 (내부 전용)</div>
       <table><thead><tr><th>강사</th><th>연락처</th><th>근무</th></tr></thead><tbody id="summerContacts"></tbody></table>
     </div></div>
+  </section>
+
+  <!-- ░░ 2026 여름방학 특강 (여름학기 종료 · 보관용) ░░ -->
+  <section class="panel" id="summer">
+    <p class="sub">2026 여름방학 특강 시간표 — 여름학기 종료 · 보관용 자료.</p>
+    <div class="terms-box">
+      <div class="term-row"><span class="term-tag t4">4주 완성</span><b>월·수·금 오전·오후</b> · 방학 기간 · 개강 7/15(수)·7/17(금) / 월요일 지연T 단과 7/20 → 종강 8/10~8/14</div>
+      <div class="term-row"><span class="term-tag t8">8주 완성</span><b>평일 저녁·주말</b> · 7/10(금) 시작 → 8/28~30 종강</div>
+      <div class="term-note">※ 강좌별 기간(4·6·8주)은 각 카드의 뱃지를 확인하세요 (일부 강좌는 6주 등 상이). 후반부는 학교별 반 복귀로 시간이 한 번 바뀔 수 있습니다.</div>
+    </div>
+    <div id="summerBoard"></div>
+
+    <button class="desk-btn" id="vacBtn" style="margin-top:20px;border-color:var(--border-strong);color:var(--accent)">🏫 학교별 방학·개학 일정 보기</button>
+    <button class="detail-toggle" id="detailToggle">🟡 지연T 월요일 유료 단과 강의계획서 <span class="hint">오름패스 별도 · 눌러서 대상·커리큘럼 보기</span><span class="arrow">▾</span></button>
+    <div id="summerDetail" class="collapsed"></div>
+    <div class="note" style="margin-top:16px">🎓 <b style="color:var(--accent)">고3 정규반·약술반</b>은 <b>개강·종강 없이 매주 입반 가능</b>. 고3 정규반은 특강과 별도 운영 · 토 09:00-12:00 / 금·일 19:00-22:00 (가경T). 학교별 내신 클리닉 병행.</div>
   </section>
 
   <!-- ░░ 성향 진단 ░░ -->
