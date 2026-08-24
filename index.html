@@ -456,6 +456,27 @@ footer b{color:var(--text)}
       <div class="calc-out" id="calcOut"></div>
     </div>
 
+    <div class="log-card calc-card">
+      <h3 class="log-title">💸 환불 계산기</h3>
+      <p class="log-desc">중도 환불 시 <b>남은 유료 회차</b>만큼 환불합니다. (월 4회 기준 · 5회차는 무료라 환불 대상 아님)</p>
+      <div class="calc-grid">
+        <div class="calc-field"><label>구분</label>
+          <select id="rfProg">
+            <option data-base="300000">고등부 정규 · 회당 7.5만</option>
+            <option data-base="284000">약술논술 · 회당 7.1만</option>
+            <option data-base="260000">중등부 · 회당 6.5만</option>
+          </select>
+        </div>
+        <div class="calc-field"><label>이번 달 총 회차</label>
+          <select id="rfTotal"><option value="4">4회</option><option value="5">5회</option></select>
+        </div>
+        <div class="calc-field"><label>수강한 회차</label>
+          <input id="rfDone" type="number" min="0" max="5" step="1" value="0" />
+        </div>
+      </div>
+      <div class="calc-out" id="rfOut"></div>
+    </div>
+
     <div class="log-card">
       <h3 class="log-title">📞 상담 내역 보내기</h3>
       <p class="log-desc">전화 상담 중 바로 작성 → 담당 강사에게 문자·메일로 전송됩니다.</p>
@@ -543,7 +564,7 @@ footer b{color:var(--text)}
       <table><thead><tr><th>월</th><th>구분</th><th>과정</th><th>세부 내용</th></tr></thead><tbody id="midCurri"></tbody></table>
     </div>
     <div class="tablecard">
-      <div class="th">고1 연간 커리큘럼</div>
+      <div class="th">고1 · 고2 연간 커리큘럼 <span class="pin">— 고1·고2 공통 흐름</span></div>
       <table><thead><tr><th>시기</th><th>과정</th></tr></thead><tbody id="hi1Curri"></tbody></table>
     </div>
   </section>
@@ -913,14 +934,14 @@ const MIDCURRI=[
  ["12월","비내신","겨울방학 전과정","심화 국어 학습, 겨울방학 국어 학습 전략","x"]
 ];
 const HI1CURRI=[
- ["5월","학평+기말 준비 (6월 학평 대비, 기말 문법 기본기)"],
+ ["5월","학평·기말 준비 (6월 학평 대비, 기말 내신 기본기)"],
  ["6월","기말고사 대비 (내신 집중 완성)"],
- ["7~8월","여름방학 특강 (수능 개념, 독해 뼈대)"],
+ ["7~8월","여름방학 특강 (수능 개념·독해 뼈대 강화)"],
  ["9월","중간고사 대비 (2학기 첫 내신 완성)"],
  ["10월","11월 학평 대비 (수능 모의고사 집중)"],
  ["11월","기말고사 대비 (내신 마지막 승부수)"],
- ["12월","학년 마무리 (기말 마무리, 고2 진학 준비)"],
- ["2027.1월","고2 진학 + 예비고2 과정 시작"]
+ ["12월","학년 마무리 (기말 마무리 + 다음 학년 진학 준비)"],
+ ["2027.1월","진급·예비 과정 시작 (고1→예비고2 / 고2→예비고3)"]
 ];
 
 /* ===== 2026 여름방학 특강 ===== */
@@ -1386,6 +1407,32 @@ function calcFee(){
 ["#dSib","#dPkg","#dCombo"].forEach(s=>{const el=$(s); if(el) el.addEventListener("input",calcFee);});
 document.querySelectorAll(".pgm,.rem").forEach(el=>el.addEventListener("input",calcFee));
 calcFee();
+/* 환불 계산기 */
+function rfCalc(){
+  const out=$("#rfOut"); if(!out) return;
+  const sel=$("#rfProg"), base=+sel.options[sel.selectedIndex].dataset.base;
+  const per=Math.round(base/4);
+  const total=parseInt($("#rfTotal").value,10)||4;
+  let done=parseInt($("#rfDone").value,10); if(isNaN(done))done=0;
+  done=Math.max(0,Math.min(total,done));
+  const paid=Math.min(total,4);
+  const remainPaid=Math.max(0,paid-done);
+  const remainTotal=total-done;
+  const freeRemain=Math.max(0,remainTotal-remainPaid);
+  const refund=remainPaid*per;
+  const note=freeRemain>0?` <span style="color:var(--muted)">(유료 ${remainPaid} + 무료 ${freeRemain})</span>`:"";
+  out.innerHTML=
+    `<div class="crow"><span>회당 단가</span><b>${wonFmt(per)}</b></div>`+
+    `<div class="crow"><span>총 ${total}회 중 수강</span><b>${done}회</b></div>`+
+    `<div class="crow"><span>남은 회차</span><b>${remainTotal}회${note}</b></div>`+
+    `<div class="crow"><span>환불 대상 (유료 잔여)</span><b class="cdisc">${remainPaid}회</b></div>`+
+    `<div class="ctot"><span class="lbl">환불액</span><span class="amt">${wonFmt(refund)}</span></div>`+
+    (remainPaid===0
+      ? `<div class="cnext">유료 ${paid}회 모두 수강 → 환불 없음</div>`
+      : `<div class="cnext">회당 ${wonFmt(per)} × 유료 잔여 ${remainPaid}회</div>`);
+}
+["#rfProg","#rfTotal","#rfDone"].forEach(s=>{const el=$(s); if(el) el.addEventListener("input",rfCalc);});
+rfCalc();
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeFaq();$("#vacModal").classList.remove("on");$("#fallModal").classList.remove("on");$("#schModal").classList.remove("on");}});
 openFaq();  // 홈 첫 진입 시 자동 팝업
 </script>
