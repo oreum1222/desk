@@ -67,6 +67,11 @@
 .bk-delta{margin-left:9px;font-size:11px;font-weight:800;padding:1px 6px;border-radius:5px;white-space:nowrap}
 .bk-delta.dn{color:var(--danger);background:var(--danger-soft)}
 .bk-delta.up{color:var(--accent);background:var(--accent-soft)}
+.pay-drop{display:inline-flex;align-items:center;gap:6px;border:1.5px dashed var(--border-strong);color:var(--muted);border-radius:9px;padding:7px 11px;font-size:12px;cursor:pointer;transition:.15s;white-space:nowrap}
+.pay-drop:hover,.pay-drop.over{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.pay-done{display:inline-flex;align-items:center;gap:6px;color:var(--accent);font-weight:700;font-size:12.5px;white-space:nowrap}
+.pay-done .who{color:var(--muted);font-weight:600;font-size:11.5px}
+tr.paid-row td{opacity:.72}
 .detail-toggle.open .arrow{transform:rotate(180deg)}
 @media(max-width:560px){.bk-stats{grid-template-columns:repeat(2,1fr)}}
 *{box-sizing:border-box;word-break:keep-all;overflow-wrap:break-word}
@@ -692,19 +697,17 @@ footer b{color:var(--text)}
 
 <!-- 계좌이체 수강료 명단 팝업 -->
 <div class="modal" id="payModal">
-  <div class="fbox" style="width:min(660px,94vw)">
-    <div class="faq-head"><div><h3>💳 계좌이체 수강료 명단</h3><p class="fsub">매달 계좌이체로 납부하는 학생 명단</p></div><button class="faq-x" id="payX">✕</button></div>
+  <div class="fbox" style="width:min(760px,95vw)">
+    <div class="faq-head"><div><h3>💳 이번 달 계좌이체 수납</h3><p class="fsub" id="payMonthLabel">계좌 캡쳐를 학생 칸에 끌어다 놓으면 처리 완료로 기록되고 실무진에게 알림이 갑니다</p></div><button class="faq-x" id="payX">✕</button></div>
     <div class="faq-body">
-      <table><thead><tr><th>이름</th><th>학년</th><th>학교</th><th>납부자</th></tr></thead><tbody id="payTable"></tbody></table>
-      <details style="margin-top:14px">
-        <summary style="cursor:pointer;color:var(--muted);font-size:13px">✎ 명단 편집 (한 줄에: 이름, 학년, 학교, 납부자)</summary>
-        <textarea id="payEdit" style="width:100%;min-height:160px;margin-top:8px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:11px;font-family:inherit;font-size:13px;line-height:1.7" placeholder="학생이름, 고1, ○○고&#10;학생이름, 고2, ○○고, 어머니"></textarea>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button class="desk-btn" id="paySave" style="border-color:var(--accent);color:var(--accent)">저장</button>
-          <button class="desk-btn" id="payReset" style="border-color:var(--border-strong);color:var(--muted)">기본값 복원</button>
-        </div>
-        <p style="font-size:11.5px;color:var(--muted);margin-top:8px">편집 내용은 이 브라우저에만 저장됩니다. '기본값 복원'을 누르면 내장 명단으로 돌아갑니다.</p>
-      </details>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+        <label style="font-size:12.5px;color:var(--muted);font-weight:700">처리자(내 이름)</label>
+        <input id="payWho" placeholder="예: 정유리" style="flex:1;min-width:140px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:8px 11px;font-family:inherit;font-size:13px" />
+        <button class="desk-btn" id="payRefresh" style="border-color:var(--border-strong);color:var(--muted)">↻ 새로고침</button>
+      </div>
+      <div id="payStatus" class="log-status" style="margin-bottom:8px"></div>
+      <table><thead><tr><th>이름</th><th>학교·학년</th><th>납부자</th><th>상태 / 처리</th></tr></thead><tbody id="payTable"></tbody></table>
+      <p style="font-size:11.5px;color:var(--muted);margin-top:10px">처리 완료된 학생은 미납 안내 대상에서 제외됩니다. 명단은 상담 자료 시트의 '계좌이체명단' 탭에서 관리합니다.</p>
     </div>
   </div>
 </div>
@@ -1491,31 +1494,71 @@ boot();
 
 /* 상담 자료 FAQ 팝업 */
 renderFAQ();
-/* ===== 계좌이체 수강료 명단 (내장 기본값 · 브라우저 편집 가능) ===== */
-/* 개인정보(미성년 학생 실명)는 공개 소스에 넣지 않습니다.
-   명단은 팝업의 '명단 편집'에 붙여넣으면 이 브라우저에만 저장됩니다(기기마다 1회). */
-const PAYLIST=[];
-function payData(){ try{const o=localStorage.getItem("deskPay"); if(o){const a=JSON.parse(o); if(Array.isArray(a)&&a.length) return a;}}catch(e){} return PAYLIST; }
+/* ===== 계좌이체 수납 (공유 · 상담일지 Apps Script 연동) =====
+   명단·처리상태는 비공개 시트에서 로드(공개 소스에 실명 없음).
+   캡쳐를 학생 칸에 드롭/붙여넣기 → 처리완료 기록 + 실무진 문자·메일 알림. */
+let PAYCACHE=[];   // [이름,학년,학교,납부자,처리자,처리시각]
+function payMonth(){ return new Date().toISOString().slice(0,7); }
+function payStatus(msg,cls){ const s=$("#payStatus"); if(!s)return; s.className="log-status"+(cls?" "+cls:""); s.textContent=msg||""; }
 function renderPay(){
   const tb=$("#payTable"); if(!tb) return;
-  const rows=payData();
-  tb.innerHTML = rows.length
-    ? rows.map(r=>`<tr><td><b>${r[0]||""}</b></td><td>${r[1]||""}</td><td>${r[2]||""}</td><td style="color:${(r[3]||"").trim()?"var(--warn)":"var(--muted)"};font-weight:${(r[3]||"").trim()?"700":"400"}">${(r[3]||"").trim()||"-"}</td></tr>`).join('')
-    : `<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:16px">명단이 비어 있습니다.</td></tr>`;
-  const ed=$("#payEdit"); if(ed) ed.value=rows.map(r=>r.filter((x,i)=>i<3||(x&&x.trim())).join(", ")).join("\n");
+  if(!PAYCACHE.length){ tb.innerHTML=`<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:16px">명단을 불러오는 중이거나 비어 있습니다.<br><span style="font-size:11.5px">(Apps Script·시트 연동이 필요합니다)</span></td></tr>`; return; }
+  tb.innerHTML=PAYCACHE.map((s,i)=>{
+    const done=!!(s[4]&&String(s[4]).trim());
+    const cell=done
+      ? `<span class="pay-done">✅ 처리완료 <span class="who">${s[4]}${s[5]?" · "+s[5]:""}</span></span>`
+      : `<span class="pay-drop" data-i="${i}" tabindex="0">📎 캡쳐 놓기 → 처리완료</span>`;
+    return `<tr class="${done?'paid-row':''}"><td><b>${s[0]||""}</b></td><td>${(s[2]||"")} ${(s[1]||"")}</td><td style="color:${(s[3]||'').trim()?'var(--warn)':'var(--muted)'};font-weight:${(s[3]||'').trim()?'700':'400'}">${(s[3]||'').trim()||'-'}</td><td>${cell}</td></tr>`;
+  }).join('');
 }
-function openPay(){ renderPay(); $("#payModal").classList.add("on"); }
+function payFetch(){
+  if(!LOG_URL){ renderPay(); return; }
+  fetch(LOG_URL+"?action=paylist&month="+encodeURIComponent(payMonth()))
+    .then(r=>r.json()).then(j=>{ if(j&&Array.isArray(j.students)) PAYCACHE=j.students; renderPay(); })
+    .catch(()=>renderPay());
+}
+function payMark(i){
+  const who=(($("#payWho")&&$("#payWho").value)||"").trim();
+  if(!who){ payStatus("먼저 '처리자(내 이름)'를 입력하세요.","err"); if($("#payWho"))$("#payWho").focus(); return; }
+  const s=PAYCACHE[i]; if(!s) return;
+  if(s[4]&&String(s[4]).trim()){ if(!confirm(s[0]+" 학생은 이미 "+s[4]+"님이 처리했습니다.\n그래도 다시 알림을 보낼까요?")) return; }
+  const memo=prompt(s[0]+" · 계좌이체 처리 완료로 기록합니다.\n메모(이체 금액·날짜 등, 선택):","");
+  if(memo===null) return;
+  try{localStorage.setItem("deskPayWho",who);}catch(e){}
+  if(!LOG_URL){ payStatus("전송 서버(LOG_URL)가 연결되지 않았습니다.","err"); return; }
+  payStatus(s[0]+" 처리 중…","");
+  const payload={action:"paydone",month:payMonth(),name:s[0],grade:s[1],school:s[2],payer:s[3],by:who,memo:memo};
+  fetch(LOG_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)})
+    .then(()=>{ payStatus("✅ "+s[0]+" 처리 완료 · 실무진에게 알림 발송","ok"); setTimeout(payFetch,1400); })
+    .catch(()=>payStatus("전송 실패 — 다시 시도하세요.","err"));
+  s[4]=who; s[5]="방금"; renderPay();   // 낙관적 반영
+}
+function openPay(){ $("#payModal").classList.add("on"); payFetch(); }
+function payInit(){
+  if(!LOG_URL) return;
+  fetch(LOG_URL+"?action=paylist&month="+encodeURIComponent(payMonth()))
+    .then(r=>r.json()).then(j=>{ if(j&&Array.isArray(j.students)&&j.students.length){ PAYCACHE=j.students; renderPay(); $("#payModal").classList.add("on"); } })
+    .catch(()=>{});
+}
 document.addEventListener("DOMContentLoaded",()=>{
+  const w=$("#payWho"); if(w){ try{w.value=localStorage.getItem("deskPayWho")||"";}catch(e){} w.addEventListener("change",()=>{try{localStorage.setItem("deskPayWho",w.value.trim());}catch(e){}}); }
   const b=$("#payBtn"); if(b) b.addEventListener("click",openPay);
   const x=$("#payX"); if(x) x.addEventListener("click",()=>$("#payModal").classList.remove("on"));
   const m=$("#payModal"); if(m) m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("on");});
-  const sv=$("#paySave"); if(sv) sv.addEventListener("click",()=>{
-    const lines=(($("#payEdit").value)||"").split("\n").map(l=>l.trim()).filter(Boolean);
-    const arr=lines.map(l=>l.split(/[,·|\t]/).map(x=>x.trim()));
-    try{localStorage.setItem("deskPay",JSON.stringify(arr));}catch(e){}
-    renderPay();
+  const rf=$("#payRefresh"); if(rf) rf.addEventListener("click",()=>{ payStatus("불러오는 중…",""); payFetch(); });
+  const tb=$("#payTable");
+  if(tb){
+    tb.addEventListener("click",e=>{const d=e.target.closest(".pay-drop"); if(d) payMark(+d.dataset.i);});
+    tb.addEventListener("dragover",e=>{const d=e.target.closest(".pay-drop"); if(d){e.preventDefault(); d.classList.add("over");}});
+    tb.addEventListener("dragleave",e=>{const d=e.target.closest(".pay-drop"); if(d) d.classList.remove("over");});
+    tb.addEventListener("drop",e=>{const d=e.target.closest(".pay-drop"); if(!d)return; e.preventDefault(); d.classList.remove("over"); payMark(+d.dataset.i);});
+  }
+  document.addEventListener("paste",e=>{
+    if(!$("#payModal").classList.contains("on")) return;
+    const a=document.activeElement; if(!a||!a.classList||!a.classList.contains("pay-drop")) return;
+    const items=(e.clipboardData&&e.clipboardData.items)||[];
+    for(const it of items){ if(it.type&&it.type.indexOf("image")===0){ payMark(+a.dataset.i); break; } }
   });
-  const rs=$("#payReset"); if(rs) rs.addEventListener("click",()=>{ if(confirm("내장 기본 명단으로 되돌릴까요?")){ try{localStorage.removeItem("deskPay");}catch(e){} renderPay(); }});
   document.addEventListener("keydown",e=>{ if(e.key==="Escape") $("#payModal").classList.remove("on"); });
 });
 function openFaq(){$("#faqModal").classList.add("on");}
@@ -1641,7 +1684,7 @@ function rfCalc(){
 ["#rfProg","#rfTotal","#rfDone"].forEach(s=>{const el=$(s); if(el) el.addEventListener("input",rfCalc);});
 rfCalc();
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeFaq();$("#vacModal").classList.remove("on");$("#fallModal").classList.remove("on");$("#schModal").classList.remove("on");}});
-if(payData().length) openPay(); else openFaq();  // 명단 있으면 계좌이체 자동팝업, 없으면 상담자료 FAQ
+payInit();  // 홈 첫 진입 시 계좌이체 수납 현황판 자동 팝업(명단 있을 때만)
 </script>
 </body>
 </html>
