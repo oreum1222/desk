@@ -467,6 +467,7 @@ footer b{color:var(--text)}
   <!-- ░░ 대시보드 ░░ -->
   <section class="panel active" id="dash">
     <p class="sub">데스크 상담 대시보드 — 수강료 계산 · 상담 내역 전송 · 2학기/학사 일정 · 강사 연락처.</p>
+    <button class="desk-btn" id="payBtn" style="margin-bottom:16px;border-color:var(--border-strong);color:var(--accent)">💳 계좌이체 수강료 명단 보기</button>
 
     <div class="log-card calc-card" style="margin-top:0">
       <h3 class="log-title">💰 수강료 계산기</h3>
@@ -686,6 +687,25 @@ footer b{color:var(--text)}
   <div class="fbox" style="width:min(760px,94vw)">
     <div class="faq-head"><div><h3>🗓 학교별 3·4차고사 · 겨울방학 일정</h3><p class="fsub">2학기 내신·상담 참고</p></div><button class="faq-x" id="schX">✕</button></div>
     <div class="faq-body" id="schBody"></div>
+  </div>
+</div>
+
+<!-- 계좌이체 수강료 명단 팝업 -->
+<div class="modal" id="payModal">
+  <div class="fbox" style="width:min(660px,94vw)">
+    <div class="faq-head"><div><h3>💳 계좌이체 수강료 명단</h3><p class="fsub">매달 계좌이체로 납부하는 학생 명단</p></div><button class="faq-x" id="payX">✕</button></div>
+    <div class="faq-body">
+      <table><thead><tr><th>이름</th><th>학년</th><th>학교</th><th>납부자</th></tr></thead><tbody id="payTable"></tbody></table>
+      <details style="margin-top:14px">
+        <summary style="cursor:pointer;color:var(--muted);font-size:13px">✎ 명단 편집 (한 줄에: 이름, 학년, 학교, 납부자)</summary>
+        <textarea id="payEdit" style="width:100%;min-height:160px;margin-top:8px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:11px;font-family:inherit;font-size:13px;line-height:1.7" placeholder="학생이름, 고1, ○○고&#10;학생이름, 고2, ○○고, 어머니"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="desk-btn" id="paySave" style="border-color:var(--accent);color:var(--accent)">저장</button>
+          <button class="desk-btn" id="payReset" style="border-color:var(--border-strong);color:var(--muted)">기본값 복원</button>
+        </div>
+        <p style="font-size:11.5px;color:var(--muted);margin-top:8px">편집 내용은 이 브라우저에만 저장됩니다. '기본값 복원'을 누르면 내장 명단으로 돌아갑니다.</p>
+      </details>
+    </div>
   </div>
 </div>
 
@@ -1471,6 +1491,33 @@ boot();
 
 /* 상담 자료 FAQ 팝업 */
 renderFAQ();
+/* ===== 계좌이체 수강료 명단 (내장 기본값 · 브라우저 편집 가능) ===== */
+/* 개인정보(미성년 학생 실명)는 공개 소스에 넣지 않습니다.
+   명단은 팝업의 '명단 편집'에 붙여넣으면 이 브라우저에만 저장됩니다(기기마다 1회). */
+const PAYLIST=[];
+function payData(){ try{const o=localStorage.getItem("deskPay"); if(o){const a=JSON.parse(o); if(Array.isArray(a)&&a.length) return a;}}catch(e){} return PAYLIST; }
+function renderPay(){
+  const tb=$("#payTable"); if(!tb) return;
+  const rows=payData();
+  tb.innerHTML = rows.length
+    ? rows.map(r=>`<tr><td><b>${r[0]||""}</b></td><td>${r[1]||""}</td><td>${r[2]||""}</td><td style="color:${(r[3]||"").trim()?"var(--warn)":"var(--muted)"};font-weight:${(r[3]||"").trim()?"700":"400"}">${(r[3]||"").trim()||"-"}</td></tr>`).join('')
+    : `<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:16px">명단이 비어 있습니다.</td></tr>`;
+  const ed=$("#payEdit"); if(ed) ed.value=rows.map(r=>r.filter((x,i)=>i<3||(x&&x.trim())).join(", ")).join("\n");
+}
+function openPay(){ renderPay(); $("#payModal").classList.add("on"); }
+document.addEventListener("DOMContentLoaded",()=>{
+  const b=$("#payBtn"); if(b) b.addEventListener("click",openPay);
+  const x=$("#payX"); if(x) x.addEventListener("click",()=>$("#payModal").classList.remove("on"));
+  const m=$("#payModal"); if(m) m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("on");});
+  const sv=$("#paySave"); if(sv) sv.addEventListener("click",()=>{
+    const lines=(($("#payEdit").value)||"").split("\n").map(l=>l.trim()).filter(Boolean);
+    const arr=lines.map(l=>l.split(/[,·|\t]/).map(x=>x.trim()));
+    try{localStorage.setItem("deskPay",JSON.stringify(arr));}catch(e){}
+    renderPay();
+  });
+  const rs=$("#payReset"); if(rs) rs.addEventListener("click",()=>{ if(confirm("내장 기본 명단으로 되돌릴까요?")){ try{localStorage.removeItem("deskPay");}catch(e){} renderPay(); }});
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape") $("#payModal").classList.remove("on"); });
+});
 function openFaq(){$("#faqModal").classList.add("on");}
 function closeFaq(){$("#faqModal").classList.remove("on");}
 $("#faqBtn").addEventListener("click",openFaq);
@@ -1594,7 +1641,7 @@ function rfCalc(){
 ["#rfProg","#rfTotal","#rfDone"].forEach(s=>{const el=$(s); if(el) el.addEventListener("input",rfCalc);});
 rfCalc();
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeFaq();$("#vacModal").classList.remove("on");$("#fallModal").classList.remove("on");$("#schModal").classList.remove("on");}});
-openFaq();  // 홈 첫 진입 시 자동 팝업
+if(payData().length) openPay(); else openFaq();  // 명단 있으면 계좌이체 자동팝업, 없으면 상담자료 FAQ
 </script>
 </body>
 </html>
