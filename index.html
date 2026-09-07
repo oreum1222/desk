@@ -1320,8 +1320,7 @@ $("#tabs").addEventListener("click",e=>{const b=e.target.closest(".tab");if(!b)r
 /* desk mode + PIN */
 const pin=$("#pin"),pinInput=$("#pinInput"),pinErr=$("#pinErr");
 function setDesk(on){document.body.classList.toggle("desk-on",on);
-  $("#deskLabel").textContent=on?"실장 모드 ON · 끄기":"실장 전용 보기";
-  if(on){ try{payInit();}catch(e){} } else { const pm=$("#payModal"); if(pm) pm.classList.remove("on"); }}
+  $("#deskLabel").textContent=on?"실장 모드 ON · 끄기":"실장 전용 보기";}
 $("#deskBtn").addEventListener("click",()=>{
   if(document.body.classList.contains("desk-on")){setDesk(false);return;}
   pin.classList.add("on");pinInput.value="";pinErr.textContent="";setTimeout(()=>pinInput.focus(),50);
@@ -1512,9 +1511,7 @@ function renderPay(){
     return `<tr class="${done?'paid-row':''}"><td><b>${s[0]||""}</b></td><td>${(s[2]||"")} ${(s[1]||"")}</td><td style="color:${(s[3]||'').trim()?'var(--warn)':'var(--muted)'};font-weight:${(s[3]||'').trim()?'700':'400'}">${(s[3]||'').trim()||'-'}</td><td>${cell}</td></tr>`;
   }).join('');
 }
-function deskOn(){ return document.body.classList.contains("desk-on"); }
 function payFetch(){
-  if(!deskOn()) return;               // 실장 모드에서만 명단 조회(개인정보 보호)
   if(!LOG_URL){ renderPay(); return; }
   fetch(LOG_URL+"?action=paylist&month="+encodeURIComponent(payMonth()))
     .then(r=>r.json()).then(j=>{ if(j&&Array.isArray(j.students)) PAYCACHE=j.students; renderPay(); })
@@ -1536,9 +1533,9 @@ function payMark(i){
     .catch(()=>payStatus("전송 실패 — 다시 시도하세요.","err"));
   s[4]=who; s[5]="방금"; renderPay();   // 낙관적 반영
 }
-function openPay(){ if(!deskOn()){ alert("계좌이체 수납 현황은 실장 모드에서만 볼 수 있습니다. 먼저 '실장 전용 보기'로 PIN을 입력하세요."); return; } $("#payModal").classList.add("on"); payFetch(); }
-function payInit(){                    // setDesk(true)에서 호출 — 실장 로그인 시 현황판 자동 팝업
-  if(!deskOn()||!LOG_URL) return;
+function openPay(){ $("#payModal").classList.add("on"); payFetch(); }
+function payInit(){                    // 홈 첫 진입 시 계좌이체 수납 현황판 자동 팝업(명단 있을 때만)
+  if(!LOG_URL) return;
   fetch(LOG_URL+"?action=paylist&month="+encodeURIComponent(payMonth()))
     .then(r=>r.json()).then(j=>{ if(j&&Array.isArray(j.students)&&j.students.length){ PAYCACHE=j.students; renderPay(); $("#payModal").classList.add("on"); } })
     .catch(()=>{});
@@ -1687,7 +1684,7 @@ function rfCalc(){
 ["#rfProg","#rfTotal","#rfDone"].forEach(s=>{const el=$(s); if(el) el.addEventListener("input",rfCalc);});
 rfCalc();
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeFaq();$("#vacModal").classList.remove("on");$("#fallModal").classList.remove("on");$("#schModal").classList.remove("on");}});
-// 계좌이체 수납 현황판은 실장 모드 진입 시(setDesk)에만 자동 팝업 — 공개 노출 방지
+payInit();  // 홈 첫 진입 시 계좌이체 수납 현황판 자동 팝업(명단 있을 때만)
 </script>
 </body>
 </html>
