@@ -71,6 +71,17 @@
 .pay-drop:hover,.pay-drop.over{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
 .pay-drop.sel{background:var(--accent-soft);border-style:solid;border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
 .pay-drop.sel::after{content:"· Ctrl+V";font-size:11px;opacity:.85}
+.pay-tab{background:var(--bg);border:1px solid var(--border-strong);color:var(--muted);border-radius:9px;padding:7px 14px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s}
+.pay-tab:hover{border-color:var(--accent);color:var(--accent)}
+.pay-tab.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+table.pay-hist{border-collapse:collapse;width:100%;font-size:12.5px}
+table.pay-hist th,table.pay-hist td{border:1px solid var(--border);padding:7px 9px;text-align:center;white-space:nowrap}
+table.pay-hist th{background:var(--bg);color:var(--muted);font-weight:700}
+table.pay-hist td.nm{text-align:left;font-weight:700;color:var(--text)}
+table.pay-hist td.sc{text-align:left;color:var(--muted)}
+table.pay-hist th.mcur{color:var(--accent)}
+.pay-o{color:var(--accent);font-weight:800;font-size:14px}
+.pay-x{color:var(--muted-2)}
 .pay-done{display:inline-flex;align-items:center;gap:6px;color:var(--accent);font-weight:700;font-size:12.5px;white-space:nowrap}
 .pay-done .who{color:var(--muted);font-weight:600;font-size:11.5px}
 tr.paid-row td{opacity:.72}
@@ -702,14 +713,26 @@ footer b{color:var(--text)}
   <div class="fbox" style="width:min(760px,95vw)">
     <div class="faq-head"><div><h3>💳 이번 달 계좌이체 수납</h3><p class="fsub" id="payMonthLabel">학생 칸을 클릭 → Ctrl+V(또는 캡쳐를 끌어다 놓기) → 금액 입력하면 처리 완료·실무진 알림 (26만~30만=수강료, 3만 미만=교재비 자동 구분)</p></div><button class="faq-x" id="payX">✕</button></div>
     <div class="faq-body">
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
-        <label style="font-size:12.5px;color:var(--muted);font-weight:700">처리자(내 이름)</label>
-        <input id="payWho" placeholder="예: 정유리" style="flex:1;min-width:140px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:8px 11px;font-family:inherit;font-size:13px" />
-        <button class="desk-btn" id="payRefresh" style="border-color:var(--border-strong);color:var(--muted)">↻ 새로고침</button>
+      <div class="pay-tabs" style="display:flex;gap:6px;margin-bottom:12px">
+        <button class="pay-tab on" id="payTabNow">이번 달 처리</button>
+        <button class="pay-tab" id="payTabHist">📆 월별 누적</button>
       </div>
-      <div id="payStatus" class="log-status" style="margin-bottom:8px"></div>
-      <table><thead><tr><th>이름</th><th>학교·학년</th><th>납부자</th><th>상태 / 처리</th></tr></thead><tbody id="payTable"></tbody></table>
-      <p style="font-size:11.5px;color:var(--muted);margin-top:10px">처리 완료된 학생은 미납 안내 대상에서 제외됩니다. 명단은 상담 자료 시트의 '계좌이체명단' 탭에서 관리합니다.</p>
+      <!-- 이번 달 처리 뷰 -->
+      <div id="payNowView">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+          <label style="font-size:12.5px;color:var(--muted);font-weight:700">처리자(내 이름)</label>
+          <input id="payWho" placeholder="예: 정유리" style="flex:1;min-width:140px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:8px 11px;font-family:inherit;font-size:13px" />
+          <button class="desk-btn" id="payRefresh" style="border-color:var(--border-strong);color:var(--muted)">↻ 새로고침</button>
+        </div>
+        <div id="payStatus" class="log-status" style="margin-bottom:8px"></div>
+        <table><thead><tr><th>이름</th><th>학교·학년</th><th>납부자</th><th>상태 / 처리</th></tr></thead><tbody id="payTable"></tbody></table>
+        <p style="font-size:11.5px;color:var(--muted);margin-top:10px">처리 완료된 학생은 미납 안내 대상에서 제외됩니다. 명단은 상담 자료 시트의 '계좌이체명단' 탭에서 관리합니다.</p>
+      </div>
+      <!-- 월별 누적 뷰 -->
+      <div id="payHistView" hidden>
+        <div style="overflow-x:auto"><table id="payHistTable" class="pay-hist"><thead></thead><tbody></tbody></table></div>
+        <p style="font-size:11.5px;color:var(--muted);margin-top:10px"><b>O</b> = 계좌이체 처리완료 · <b>–</b> = 미처리(전산·현금 등 별도 확인). 칸에 마우스를 올리면 처리자·시각이 표시됩니다.</p>
+      </div>
     </div>
   </div>
 </div>
@@ -1554,12 +1577,46 @@ function payInit(){                    // 홈 첫 진입 시 계좌이체 수납
     .then(r=>r.json()).then(j=>{ if(j&&Array.isArray(j.students)&&j.students.length){ PAYCACHE=j.students; renderPay(); $("#payModal").classList.add("on"); } })
     .catch(()=>{});
 }
+/* ===== 월별 누적 수납 현황(학생 × 월 그리드) ===== */
+function payTab(hist){
+  const nowV=$("#payNowView"), hV=$("#payHistView");
+  const tN=$("#payTabNow"), tH=$("#payTabHist");
+  if(nowV) nowV.hidden=!!hist; if(hV) hV.hidden=!hist;
+  if(tN) tN.classList.toggle("on",!hist); if(tH) tH.classList.toggle("on",!!hist);
+  if(hist) payHistFetch();
+}
+function mLabel(ym){ const p=(ym||"").split("-"); return p.length===2?(+p[1])+"월":ym; }
+function renderPayHist(data){
+  const t=$("#payHistTable"); if(!t) return;
+  const months=(data&&data.months)||[], studs=(data&&data.students)||[];
+  const cur=payMonth();
+  t.querySelector("thead").innerHTML="<tr><th>이름</th><th>학교·학년</th>"+
+    months.map(m=>`<th class="${m===cur?'mcur':''}">${mLabel(m)}</th>`).join("")+"</tr>";
+  if(!studs.length){ t.querySelector("tbody").innerHTML=`<tr><td colspan="${months.length+2}" style="color:var(--muted);padding:14px">명단이 비어 있습니다.</td></tr>`; return; }
+  t.querySelector("tbody").innerHTML=studs.map(s=>{
+    const cells=(s.cells||[]).map(c=>{
+      const by=c&&c[0]; const at=c&&c[1];
+      return by ? `<td><span class="pay-o" title="${by}${at?' · '+at:''}">O</span></td>`
+                : `<td><span class="pay-x">–</span></td>`;
+    }).join("");
+    return `<tr><td class="nm">${s.name||""}</td><td class="sc">${(s.school||"")} ${(s.grade||"")}</td>${cells}</tr>`;
+  }).join("");
+}
+function payHistFetch(){
+  const t=$("#payHistTable"); if(!LOG_URL||!t) return;
+  t.querySelector("tbody").innerHTML=`<tr><td style="color:var(--muted);padding:14px">불러오는 중…</td></tr>`;
+  fetch(LOG_URL+"?action=payhistory&months=4")
+    .then(r=>r.json()).then(j=>renderPayHist(j))
+    .catch(()=>{ t.querySelector("tbody").innerHTML=`<tr><td style="color:var(--danger);padding:14px">불러오기 실패 — 다시 시도하세요.</td></tr>`; });
+}
 document.addEventListener("DOMContentLoaded",()=>{
   const w=$("#payWho"); if(w){ try{w.value=localStorage.getItem("deskPayWho")||"";}catch(e){} w.addEventListener("change",()=>{try{localStorage.setItem("deskPayWho",w.value.trim());}catch(e){}}); }
   const b=$("#payBtn"); if(b) b.addEventListener("click",openPay);
   const x=$("#payX"); if(x) x.addEventListener("click",()=>$("#payModal").classList.remove("on"));
   const m=$("#payModal"); if(m) m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("on");});
   const rf=$("#payRefresh"); if(rf) rf.addEventListener("click",()=>{ payStatus("불러오는 중…",""); payFetch(); });
+  const tN=$("#payTabNow"); if(tN) tN.addEventListener("click",()=>payTab(false));
+  const tH=$("#payTabHist"); if(tH) tH.addEventListener("click",()=>payTab(true));
   const tb=$("#payTable");
   function paySelect(d){                       // 칸 클릭 = 선택(처리 아님). 이후 Ctrl+V로 붙여넣기
     if(!tb) return;
