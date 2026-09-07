@@ -69,6 +69,8 @@
 .bk-delta.up{color:var(--accent);background:var(--accent-soft)}
 .pay-drop{display:inline-flex;align-items:center;gap:6px;border:1.5px dashed var(--border-strong);color:var(--muted);border-radius:9px;padding:7px 11px;font-size:12px;cursor:pointer;transition:.15s;white-space:nowrap}
 .pay-drop:hover,.pay-drop.over{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.pay-drop.sel{background:var(--accent-soft);border-style:solid;border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.pay-drop.sel::after{content:"· Ctrl+V";font-size:11px;opacity:.85}
 .pay-done{display:inline-flex;align-items:center;gap:6px;color:var(--accent);font-weight:700;font-size:12.5px;white-space:nowrap}
 .pay-done .who{color:var(--muted);font-weight:600;font-size:11.5px}
 tr.paid-row td{opacity:.72}
@@ -698,7 +700,7 @@ footer b{color:var(--text)}
 <!-- 계좌이체 수강료 명단 팝업 -->
 <div class="modal" id="payModal">
   <div class="fbox" style="width:min(760px,95vw)">
-    <div class="faq-head"><div><h3>💳 이번 달 계좌이체 수납</h3><p class="fsub" id="payMonthLabel">계좌 캡쳐를 학생 칸에 끌어다 놓으면 처리 완료로 기록되고 실무진에게 알림이 갑니다</p></div><button class="faq-x" id="payX">✕</button></div>
+    <div class="faq-head"><div><h3>💳 이번 달 계좌이체 수납</h3><p class="fsub" id="payMonthLabel">학생 칸을 클릭 → Ctrl+V(또는 캡쳐를 끌어다 놓기) → 금액 입력하면 처리 완료·실무진 알림 (26만~30만=수강료, 3만 미만=교재비 자동 구분)</p></div><button class="faq-x" id="payX">✕</button></div>
     <div class="faq-body">
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
         <label style="font-size:12.5px;color:var(--muted);font-weight:700">처리자(내 이름)</label>
@@ -1498,10 +1500,12 @@ renderFAQ();
    명단·처리상태는 비공개 시트에서 로드(공개 소스에 실명 없음).
    캡쳐를 학생 칸에 드롭/붙여넣기 → 처리완료 기록 + 실무진 문자·메일 알림. */
 let PAYCACHE=[];   // [이름,학년,학교,납부자,처리자,처리시각]
+let PAYSEL=-1;     // 현재 선택된 학생 행(클릭 선택 → Ctrl+V 붙여넣기 대상)
 function payMonth(){ return new Date().toISOString().slice(0,7); }
 function payStatus(msg,cls){ const s=$("#payStatus"); if(!s)return; s.className="log-status"+(cls?" "+cls:""); s.textContent=msg||""; }
 function renderPay(){
   const tb=$("#payTable"); if(!tb) return;
+  PAYSEL=-1;   // 다시 그릴 때 선택 해제
   if(!PAYCACHE.length){ tb.innerHTML=`<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:16px">명단을 불러오는 중이거나 비어 있습니다.<br><span style="font-size:11.5px">(Apps Script·시트 연동이 필요합니다)</span></td></tr>`; return; }
   tb.innerHTML=PAYCACHE.map((s,i)=>{
     const done=!!(s[4]&&String(s[4]).trim());
@@ -1517,19 +1521,29 @@ function payFetch(){
     .then(r=>r.json()).then(j=>{ if(j&&Array.isArray(j.students)) PAYCACHE=j.students; renderPay(); })
     .catch(()=>renderPay());
 }
+/* 이체 금액 → 구분 자동 분류: 3만 미만=교재비, 그 이상(26만~30만 등)=수강료 */
+function payClassify(amt){
+  if(amt==null||isNaN(amt)||amt<=0) return "";
+  if(amt < 30000) return "교재비";
+  return "수강료";
+}
 function payMark(i){
   const who=(($("#payWho")&&$("#payWho").value)||"").trim();
   if(!who){ payStatus("먼저 '처리자(내 이름)'를 입력하세요.","err"); if($("#payWho"))$("#payWho").focus(); return; }
   const s=PAYCACHE[i]; if(!s) return;
   if(s[4]&&String(s[4]).trim()){ if(!confirm(s[0]+" 학생은 이미 "+s[4]+"님이 처리했습니다.\n그래도 다시 알림을 보낼까요?")) return; }
-  const memo=prompt(s[0]+" · 계좌이체 처리 완료로 기록합니다.\n메모(이체 금액·날짜 등, 선택):","");
-  if(memo===null) return;
+  const raw=prompt(s[0]+" · 계좌이체 처리 완료로 기록합니다.\n이체 금액을 숫자만 입력하세요 (예: 285000).\n· 26만~30만 → 수강료   · 3만 미만 → 교재비\n(모르면 비워두고 확인)","");
+  if(raw===null) return;   // 취소
+  const amt=parseInt(String(raw).replace(/[^0-9]/g,""),10);
+  const kind=payClassify(amt);
+  const amtTxt=isNaN(amt)?"":(amt.toLocaleString()+"원");
+  const memo=[amtTxt, kind].filter(Boolean).join(" · ");   // 예: "285,000원 · 수강료"
   try{localStorage.setItem("deskPayWho",who);}catch(e){}
   if(!LOG_URL){ payStatus("전송 서버(LOG_URL)가 연결되지 않았습니다.","err"); return; }
   payStatus(s[0]+" 처리 중…","");
-  const payload={action:"paydone",month:payMonth(),name:s[0],grade:s[1],school:s[2],payer:s[3],by:who,memo:memo};
+  const payload={action:"paydone",month:payMonth(),name:s[0],grade:s[1],school:s[2],payer:s[3],by:who,memo:memo,amount:isNaN(amt)?"":amt,kind:kind};
   fetch(LOG_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)})
-    .then(()=>{ payStatus("✅ "+s[0]+" 처리 완료 · 실무진에게 알림 발송","ok"); setTimeout(payFetch,1400); })
+    .then(()=>{ payStatus("✅ "+s[0]+" 처리 완료"+(kind?(" ("+kind+(amtTxt?" "+amtTxt:"")+")"):"")+" · 실무진에게 알림 발송","ok"); setTimeout(payFetch,1400); })
     .catch(()=>payStatus("전송 실패 — 다시 시도하세요.","err"));
   s[4]=who; s[5]="방금"; renderPay();   // 낙관적 반영
 }
@@ -1547,17 +1561,29 @@ document.addEventListener("DOMContentLoaded",()=>{
   const m=$("#payModal"); if(m) m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("on");});
   const rf=$("#payRefresh"); if(rf) rf.addEventListener("click",()=>{ payStatus("불러오는 중…",""); payFetch(); });
   const tb=$("#payTable");
+  function paySelect(d){                       // 칸 클릭 = 선택(처리 아님). 이후 Ctrl+V로 붙여넣기
+    if(!tb) return;
+    tb.querySelectorAll(".pay-drop.sel").forEach(x=>x.classList.remove("sel"));
+    if(d){ d.classList.add("sel"); PAYSEL=+d.dataset.i; d.focus(); payStatus("‘"+((PAYCACHE[PAYSEL]||[])[0]||"")+"’ 선택됨 — Ctrl+V로 캡쳐를 붙여넣으세요 (Enter=캡쳐 없이 처리)",""); }
+    else PAYSEL=-1;
+  }
   if(tb){
-    tb.addEventListener("click",e=>{const d=e.target.closest(".pay-drop"); if(d) payMark(+d.dataset.i);});
+    tb.addEventListener("click",e=>{const d=e.target.closest(".pay-drop"); paySelect(d||null);});
+    tb.addEventListener("keydown",e=>{const d=e.target.closest(".pay-drop"); if(d&&(e.key==="Enter"||e.key===" ")){ e.preventDefault(); payMark(+d.dataset.i); }});
     tb.addEventListener("dragover",e=>{const d=e.target.closest(".pay-drop"); if(d){e.preventDefault(); d.classList.add("over");}});
     tb.addEventListener("dragleave",e=>{const d=e.target.closest(".pay-drop"); if(d) d.classList.remove("over");});
     tb.addEventListener("drop",e=>{const d=e.target.closest(".pay-drop"); if(!d)return; e.preventDefault(); d.classList.remove("over"); payMark(+d.dataset.i);});
   }
   document.addEventListener("paste",e=>{
     if(!$("#payModal").classList.contains("on")) return;
-    const a=document.activeElement; if(!a||!a.classList||!a.classList.contains("pay-drop")) return;
+    // 붙여넣기 대상: 선택된 칸(PAYSEL) 우선, 없으면 포커스된 칸
+    let i=PAYSEL;
+    if(i<0){ const a=document.activeElement; if(a&&a.classList&&a.classList.contains("pay-drop")) i=+a.dataset.i; }
+    if(i<0){ payStatus("먼저 학생 칸을 클릭해 선택한 뒤 Ctrl+V 하세요.","err"); return; }
     const items=(e.clipboardData&&e.clipboardData.items)||[];
-    for(const it of items){ if(it.type&&it.type.indexOf("image")===0){ payMark(+a.dataset.i); break; } }
+    let hasImg=false; for(const it of items){ if(it.type&&it.type.indexOf("image")===0){ hasImg=true; break; } }
+    if(!hasImg){ payStatus("클립보드에 이미지(계좌 캡쳐)가 없습니다. 캡쳐를 복사한 뒤 Ctrl+V 하세요.","err"); return; }
+    e.preventDefault(); payMark(i);
   });
   document.addEventListener("keydown",e=>{ if(e.key==="Escape") $("#payModal").classList.remove("on"); });
 });
