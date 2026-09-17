@@ -894,12 +894,6 @@ let CARDS = [
   feat:"—"},
 
  // ── 중등 (시트 기준) ──
- {school:"궁내·용호",grade:"중등",sub:"중2",headline:"비내신엔 현대문법, 내신 집중 대비",
-  tags:["중2","해솔T"],diff:"용호 객관식 난이도↑",
-  sessions:[["월 17-20","해솔",null,null,"미래엔(민/신)"]],
-  structure:["중2 대상","궁내중 시험 없음 / 용호중 객관식 난이도 ↑","비내신 현대문법","매회차 프린트물 추가 과제"],
-  disc:["용호중 객관식 난이도 높음"],strat:["비내신 현대문법","매회차 프린트물 추가 과제"],score:"—",feat:"정원 2명"},
-
  {school:"산본·용호·당동",grade:"중등",sub:"중2",headline:"비내신 현대문법 + 내신대비 4주",
   tags:["중2","해솔T"],diff:"서술형·문학개념어 적용 어려움",
   sessions:[["토 14-17","해솔",null,null,"천재(노)·미래엔(신)"]],
@@ -1359,7 +1353,7 @@ async function tryPin(){
       const r=await fetch(WEBAPP_URL+sep+"pin="+encodeURIComponent(entered));
       const j=await r.json();
       const authed=j&&j.cards&&j.cards.some(c=>c.notes&&c.notes.length);
-      if(authed){CARDS=j.cards;applyCaps(CARDS);render();renderTime();pin.classList.remove("on");setDesk(true);return;}
+      if(authed){CARDS=j.cards.filter(keepCard);applyCaps(CARDS);render();renderTime();pin.classList.remove("on");setDesk(true);return;}
       pinErr.textContent="PIN이 올바르지 않습니다";pinInput.value="";pinInput.focus();return;
     }catch(e){pinErr.textContent="연결 오류 — 다시 시도하세요";return;}
   }
@@ -1382,10 +1376,10 @@ const ENROLL={
  "고2|군포고|토 17-20":6,"고2|군포고|일 14-17":12,"고2|군포중앙고|토 19-22":16,
  "고2|산본고|수 17-20":7,"고2|산본고|일 19-22":12,"고2|수리고|수 19-22":6,"고2|수리고|일 19-22":12,
  "고2|용호고|일 12-15":8,"고2|흥진고|일 10-13":7,"고2|수원외고|일 17-20":4,
- "중등|궁내·용호|월 17-20":1,"중등|산본·용호·당동|토 14-17":4,"중등|산본·당동·궁내|토 10-13":3,
+ "중등|산본·용호·당동|토 14-17":4,"중등|산본·당동·궁내|토 10-13":3,
  "고3|금요/토요 정규반|금 19-22":25,"고3|금요/토요 정규반|토 09-12":40
 };
-const MIDMAX={"궁내·용호":2,"산본·용호·당동":4,"산본·당동·궁내":3};
+const MIDMAX={"산본·용호·당동":4,"산본·당동·궁내":3};
 /* 방 크기 등으로 정원이 학년 규칙(고1 20)과 다른 반: 개별 정원 지정 */
 const CAPOVR={"고1|산본고|토 10-13":15,"고1|산본고|일 18-21":15,   // 예담T 강의실 크기 제한
   "고3|금요/토요 정규반|금 19-22":40,"고3|금요/토요 정규반|토 09-12":40};   // 고3 정규반 정원 40
@@ -1396,6 +1390,11 @@ const REMAP={
   "고1|수리고|일 11-14":{time:"일 10-13"},                           // 지연T 수리고1 일 11→10시
   "고2|수리고|일 19-22":{time:"일 18-21"}                            // 지연T 수리고2 일 19→18시
 };
+/* 폐강·미개설 반: 시트에서 불러와도 화면에서 제외 */
+function keepCard(c){
+  if(c && c.grade==="중등" && c.school==="궁내·용호") return false;   // 중2 월요일반 폐강(2026-09)
+  return true;
+}
 /* 정원 규칙(3차: 고1 20·고2 25) + 원생목록 기준 현재인원 반영 */
 function applyCaps(cards){
   cards.forEach(c=>{
@@ -1510,7 +1509,7 @@ async function boot(){
     try{
       const r=await fetch(WEBAPP_URL);
       const j=await r.json();
-      if(j&&j.cards&&j.cards.length){CARDS=j.cards;}
+      if(j&&j.cards&&j.cards.length){CARDS=j.cards.filter(keepCard);}
     }catch(e){console.warn("시트 연동 실패 — 내장 데이터 사용",e);}
   }
   renderAll();
