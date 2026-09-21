@@ -1605,9 +1605,13 @@ function renderUnpaidBanner(){
       el.innerHTML=`<h3>✅ 오늘 수업 미납자 없음</h3><p class="ub-sub">${ts?("makeedu 기준 "+ts+" 갱신"):"동기화 대기 중"}</p>`;
       return;
     }
-    const chips=list.map(s=>`<div class="ub-chip"><b>${s.student||""} <span>${(s.school||"")} ${(s.grade||"")}</span></b><span>${(s.lesson||"")}${s.teacher?(" · "+s.teacher+"T"):""}</span><span class="ub-amt">미납 ${Number(s.amount||0).toLocaleString()}원</span></div>`).join("");
+    const chips=list.map(s=>{
+      const cls=(s.lesson||"")+(s.teacher?(" · "+s.teacher+"T"):"");
+      const amt=Number(s.amount||0);
+      return `<div class="ub-chip"><b>${s.student||""} <span>${(s.school||"")} ${(s.grade||"")}</span></b>${cls?`<span>${cls}</span>`:""}<span class="ub-amt">미납${amt>0?(" "+amt.toLocaleString()+"원"):""}</span></div>`;
+    }).join("");
     el.hidden=false;
-    el.innerHTML=`<h3>⚠️ 오늘 수업 미납자 ${list.length}명 — 등원 시 확인</h3><p class="ub-sub">makeedu 기준 ${ts||""} 갱신 · 하루 3회(11시·15시·21:30) 자동 반영</p><div class="ub-list">${chips}</div>`;
+    el.innerHTML=`<h3>⚠️ 미납자 ${list.length}명 — 등원 시 확인</h3><p class="ub-sub">makeedu 기준 ${ts||""} 갱신 · 하루 3회(11시·15시·21:30) 자동 반영</p><div class="ub-list">${chips}</div>`;
   }).catch(()=>{});
 }
 function openPay(){ $("#payModal").classList.add("on"); payFetch(); }
