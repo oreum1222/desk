@@ -4,3 +4,9 @@
 !.gitignore
 !README.md
 !logo.png
+# PWA(앱 설치)용 파일 — 개인정보 없음, 배포 허용
+!manifest.webmanifest
+!sw.js
+!icon-192.png
+!icon-512.png
+!icon-maskable-512.png
