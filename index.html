@@ -80,6 +80,8 @@
 .pay-tab{background:var(--bg);border:1px solid var(--border-strong);color:var(--muted);border-radius:9px;padding:7px 14px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s}
 .pay-tab:hover{border-color:var(--accent);color:var(--accent)}
 .pay-tab.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.pay-nav{width:34px;height:32px;border:1px solid var(--border-strong);background:var(--bg);color:var(--text);border-radius:8px;cursor:pointer;font-family:inherit;font-size:13px}
+.pay-nav:hover{border-color:var(--accent);color:var(--accent)}
 table.pay-hist{border-collapse:collapse;width:100%;font-size:12.5px}
 table.pay-hist th,table.pay-hist td{border:1px solid var(--border);padding:7px 9px;text-align:center;white-space:nowrap}
 table.pay-hist th{background:var(--bg);color:var(--muted);font-weight:700}
@@ -738,6 +740,12 @@ footer b{color:var(--text)}
       </div>
       <!-- 이번 달 처리 뷰 -->
       <div id="payNowView">
+        <div style="display:flex;gap:8px;align-items:center;justify-content:center;margin-bottom:12px">
+          <button class="pay-nav" id="payPrev" title="이전 달">◀</button>
+          <b id="payMonHead" style="min-width:120px;text-align:center;font-size:15px;color:var(--accent)"></b>
+          <button class="pay-nav" id="payNext" title="다음 달">▶</button>
+          <button class="pay-nav" id="payThis" style="width:auto;padding:0 12px;font-size:12px">이번 달</button>
+        </div>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
           <label style="font-size:12.5px;color:var(--muted);font-weight:700">처리자(내 이름)</label>
           <input id="payWho" placeholder="예: 정유리" style="flex:1;min-width:140px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:8px 11px;font-family:inherit;font-size:13px" />
@@ -1543,6 +1551,15 @@ renderFAQ();
 let PAYCACHE=[];   // [이름,학년,학교,납부자,처리자,처리시각]
 let PAYSEL=-1;     // 현재 선택된 학생 행(클릭 선택 → Ctrl+V 붙여넣기 대상)
 function payMonth(){ return new Date().toISOString().slice(0,7); }
+let PAYVM = payMonth();   // 현재 보고 있는 달(YYYY-MM). 처리 탭에서 ◀▶로 이동
+function payMonKo(ym){ const p=(ym||"").split("-"); return p.length===2 ? (p[0]+"년 "+(+p[1])+"월") : ym; }
+function paySetMonth(ym){ PAYVM=ym; const h=$("#payMonHead"); if(h) h.textContent=payMonKo(ym)+(ym===payMonth()?" (이번 달)":""); }
+function payShiftMonth(delta){
+  let [y,m]=PAYVM.split("-").map(Number); m+=delta;
+  while(m<=0){m+=12;y--;} while(m>12){m-=12;y++;}
+  paySetMonth(y+"-"+("0"+m).slice(-2));
+  payStatus("불러오는 중…",""); payFetch();
+}
 function payStatus(msg,cls){ const s=$("#payStatus"); if(!s)return; s.className="log-status"+(cls?" "+cls:""); s.textContent=msg||""; }
 function renderPay(){
   const tb=$("#payTable"); if(!tb) return;
@@ -1557,8 +1574,9 @@ function renderPay(){
   }).join('');
 }
 function payFetch(){
+  const h=$("#payMonHead"); if(h&&!h.textContent) paySetMonth(PAYVM);
   if(!LOG_URL){ renderPay(); return; }
-  fetch(LOG_URL+"?action=paylist&month="+encodeURIComponent(payMonth()))
+  fetch(LOG_URL+"?action=paylist&month="+encodeURIComponent(PAYVM)+"&cb="+Date.now())
     .then(r=>r.json()).then(j=>{ if(j&&Array.isArray(j.students)) PAYCACHE=j.students; renderPay(); })
     .catch(()=>renderPay());
 }
@@ -1582,7 +1600,7 @@ function payMark(i){
   try{localStorage.setItem("deskPayWho",who);}catch(e){}
   if(!LOG_URL){ payStatus("전송 서버(LOG_URL)가 연결되지 않았습니다.","err"); return; }
   payStatus(s[0]+" 처리 중…","");
-  const payload={action:"paydone",month:payMonth(),name:s[0],grade:s[1],school:s[2],payer:s[3],by:who,memo:memo,amount:isNaN(amt)?"":amt,kind:kind};
+  const payload={action:"paydone",month:PAYVM,name:s[0],grade:s[1],school:s[2],payer:s[3],by:who,memo:memo,amount:isNaN(amt)?"":amt,kind:kind};
   fetch(LOG_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)})
     .then(()=>{ payStatus("✅ "+s[0]+" 처리 완료"+(kind?(" ("+kind+(amtTxt?" "+amtTxt:"")+")"):"")+" · 실무진에게 알림 발송","ok"); setTimeout(payFetch,1400); })
     .catch(()=>payStatus("전송 실패 — 다시 시도하세요.","err"));
@@ -1614,7 +1632,7 @@ function renderUnpaidBanner(){
     el.innerHTML=`<h3>⚠️ 미납자 ${list.length}명 — 등원 시 확인</h3><p class="ub-sub">makeedu 기준 ${ts||""} 갱신 · 하루 3회(11시·15시·21:30) 자동 반영</p><div class="ub-list">${chips}</div>`;
   }).catch(()=>{});
 }
-function openPay(){ $("#payModal").classList.add("on"); payFetch(); }
+function openPay(){ $("#payModal").classList.add("on"); paySetMonth(payMonth()); payFetch(); }
 function payInit(){                    // 홈 첫 진입 시 계좌이체 수납 현황판 자동 팝업(명단 있을 때만)
   if(!LOG_URL) return;
   fetch(LOG_URL+"?action=paylist&month="+encodeURIComponent(payMonth()))
@@ -1659,6 +1677,9 @@ document.addEventListener("DOMContentLoaded",()=>{
   const x=$("#payX"); if(x) x.addEventListener("click",()=>$("#payModal").classList.remove("on"));
   const m=$("#payModal"); if(m) m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("on");});
   const rf=$("#payRefresh"); if(rf) rf.addEventListener("click",()=>{ payStatus("불러오는 중…",""); payFetch(); });
+  const pp=$("#payPrev"); if(pp) pp.addEventListener("click",()=>payShiftMonth(-1));
+  const pn=$("#payNext"); if(pn) pn.addEventListener("click",()=>payShiftMonth(1));
+  const pt=$("#payThis"); if(pt) pt.addEventListener("click",()=>{ paySetMonth(payMonth()); payStatus("불러오는 중…",""); payFetch(); });
   const tN=$("#payTabNow"); if(tN) tN.addEventListener("click",()=>payTab(false));
   const tH=$("#payTabHist"); if(tH) tH.addEventListener("click",()=>payTab(true));
   const tb=$("#payTable");
