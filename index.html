@@ -82,6 +82,8 @@
 .pay-tab.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
 .pay-nav{width:34px;height:32px;border:1px solid var(--border-strong);background:var(--bg);color:var(--text);border-radius:8px;cursor:pointer;font-family:inherit;font-size:13px}
 .pay-nav:hover{border-color:var(--accent);color:var(--accent)}
+.pay-undo{margin-left:8px;border:1px solid var(--border-strong);background:transparent;color:var(--muted);border-radius:7px;padding:3px 8px;font-size:11px;font-family:inherit;cursor:pointer;white-space:nowrap}
+.pay-undo:hover{border-color:var(--danger);color:var(--danger)}
 table.pay-hist{border-collapse:collapse;width:100%;font-size:12.5px}
 table.pay-hist th,table.pay-hist td{border:1px solid var(--border);padding:7px 9px;text-align:center;white-space:nowrap}
 table.pay-hist th{background:var(--bg);color:var(--muted);font-weight:700}
@@ -753,7 +755,21 @@ footer b{color:var(--text)}
         </div>
         <div id="payStatus" class="log-status" style="margin-bottom:8px"></div>
         <table><thead><tr><th>이름</th><th>학교·학년</th><th>납부자</th><th>상태 / 처리</th></tr></thead><tbody id="payTable"></tbody></table>
-        <p style="font-size:11.5px;color:var(--muted);margin-top:10px">처리 완료된 학생은 미납 안내 대상에서 제외됩니다. 명단은 상담 자료 시트의 '계좌이체명단' 탭에서 관리합니다.</p>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="desk-btn" id="payAddToggle" style="border-color:var(--accent);color:var(--accent)">➕ 명단에 학생 추가</button>
+        </div>
+        <div id="payAddForm" hidden style="margin-top:10px;padding:12px;border:1px dashed var(--accent);border-radius:11px;background:var(--accent-soft)">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <input id="payAddName" placeholder="이름*" style="width:110px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 10px;font-family:inherit;font-size:13px" />
+            <input id="payAddGrade" placeholder="학년(예: 고1)" style="width:120px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 10px;font-family:inherit;font-size:13px" />
+            <input id="payAddSchool" placeholder="학교" style="width:120px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 10px;font-family:inherit;font-size:13px" />
+            <input id="payAddPayer" placeholder="납부자(선택)" style="width:120px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 10px;font-family:inherit;font-size:13px" />
+            <button class="desk-btn" id="payAddSave" style="border-color:var(--accent);color:var(--accent);font-weight:700">추가</button>
+            <button class="desk-btn" id="payAddCancel" style="border-color:var(--border-strong);color:var(--muted)">취소</button>
+          </div>
+          <div id="payAddMsg" style="font-size:12px;margin-top:8px"></div>
+        </div>
+        <p style="font-size:11.5px;color:var(--muted);margin-top:10px">처리 완료된 학생은 미납 안내 대상에서 제외됩니다. 처리완료 옆 ↩ 로 되돌릴 수 있고(PIN 필요), 되돌린 사람이 기록됩니다.</p>
       </div>
       <!-- 월별 누적 뷰 -->
       <div id="payHistView" hidden>
@@ -1568,7 +1584,7 @@ function renderPay(){
   tb.innerHTML=PAYCACHE.map((s,i)=>{
     const done=!!(s[4]&&String(s[4]).trim());
     const cell=done
-      ? `<span class="pay-done">✅ 처리완료 <span class="who">${s[4]}${s[5]?" · "+s[5]:""}</span></span>`
+      ? `<span class="pay-done">✅ 처리완료 <span class="who">${s[4]}${s[5]?" · "+s[5]:""}</span></span> <button class="pay-undo" data-i="${i}" title="처리 되돌리기(PIN 필요)">↩ 되돌리기</button>`
       : `<span class="pay-drop" data-i="${i}" tabindex="0">📎 캡쳐 놓기 → 처리완료</span>`;
     return `<tr class="${done?'paid-row':''}"><td><b>${s[0]||""}</b></td><td>${(s[2]||"")} ${(s[1]||"")}</td><td style="color:${(s[3]||'').trim()?'var(--warn)':'var(--muted)'};font-weight:${(s[3]||'').trim()?'700':'400'}">${(s[3]||'').trim()||'-'}</td><td>${cell}</td></tr>`;
   }).join('');
@@ -1605,6 +1621,46 @@ function payMark(i){
     .then(()=>{ payStatus("✅ "+s[0]+" 처리 완료"+(kind?(" ("+kind+(amtTxt?" "+amtTxt:"")+")"):"")+" · 실무진에게 알림 발송","ok"); setTimeout(payFetch,1400); })
     .catch(()=>payStatus("전송 실패 — 다시 시도하세요.","err"));
   s[4]=who; s[5]="방금"; renderPay();   // 낙관적 반영
+}
+/* Apps Script는 POST 응답을 못 읽으므로(리다이렉트), no-cors로 보낸 뒤 재조회해 결과를 확인 */
+function payPost(payload){ return fetch(LOG_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)}); }
+function payReload(){ return fetch(LOG_URL+"?action=paylist&month="+encodeURIComponent(PAYVM)+"&cb="+Date.now()).then(r=>r.json()); }
+function payAddMsg(msg,cls){ const m=$("#payAddMsg"); if(m){ m.style.color=cls==="err"?"var(--danger)":"var(--accent)"; m.textContent=msg||""; } }
+function payAddStudent(){
+  const name=(($("#payAddName")&&$("#payAddName").value)||"").trim();
+  if(!name){ payAddMsg("이름을 입력하세요.","err"); $("#payAddName").focus(); return; }
+  if(!LOG_URL){ payAddMsg("서버가 연결되지 않았습니다.","err"); return; }
+  const school=(($("#payAddSchool")&&$("#payAddSchool").value)||"").trim();
+  const payload={action:"addstudent",name:name,grade:(($("#payAddGrade")&&$("#payAddGrade").value)||"").trim(),school:school,payer:(($("#payAddPayer")&&$("#payAddPayer").value)||"").trim()};
+  payAddMsg("추가 중…","");
+  payPost(payload).then(()=>setTimeout(()=>{
+    payReload().then(j=>{
+      const st=(j&&j.students)||[];
+      const ok=st.some(s=>String(s[0])===name && String(s[2]||"")===school);
+      if(ok){ PAYCACHE=st; renderPay(); payAddMsg("✅ "+name+" 추가됨","ok");
+        ["payAddName","payAddGrade","payAddSchool","payAddPayer"].forEach(id=>{const e=$("#"+id); if(e)e.value="";});
+        setTimeout(()=>{ $("#payAddForm").hidden=true; payAddMsg("",""); },900);
+      } else { payAddMsg("⚠️ 추가되지 않음 — 이미 있는 학생이거나 오류","err"); }
+    }).catch(()=>payAddMsg("확인 실패 — 새로고침 해보세요.","err"));
+  },1500)).catch(()=>payAddMsg("전송 실패 — 다시 시도하세요.","err"));
+}
+function payRevert(i){
+  const s=PAYCACHE[i]; if(!s) return;
+  if(!confirm(s[0]+" 학생의 처리완료를 되돌릴까요?\n(처리자: "+(s[4]||"")+")")) return;
+  const pin=prompt(s[0]+" 처리 되돌리기\n본인 PIN을 입력하세요 (되돌린 사람으로 기록됩니다):","");
+  if(pin===null||!pin.trim()) return;
+  if(!LOG_URL){ payStatus("서버가 연결되지 않았습니다.","err"); return; }
+  const nm=s[0];
+  payStatus(nm+" 되돌리는 중…","");
+  payPost({action:"revert",month:PAYVM,name:nm,pin:pin.trim()}).then(()=>setTimeout(()=>{
+    payReload().then(j=>{
+      const st=(j&&j.students)||[]; PAYCACHE=st; renderPay();
+      const row=st.find(x=>String(x[0])===nm);
+      const stillDone=row && row[4] && String(row[4]).trim();
+      if(stillDone){ payStatus("⚠️ 되돌리기 실패 — PIN이 올바르지 않거나 오류입니다.","err"); }
+      else { payStatus("↩ "+nm+" 처리 되돌림 완료 (되돌린 사람 기록됨)","ok"); }
+    }).catch(()=>payStatus("확인 실패 — 새로고침 해보세요.","err"));
+  },1500)).catch(()=>payStatus("전송 실패 — 다시 시도하세요.","err"));
 }
 /* ===== 오늘 수업 미납자 배너 (makeedu 동기화 데이터) ===== */
 function renderUnpaidBanner(){
@@ -1680,6 +1736,9 @@ document.addEventListener("DOMContentLoaded",()=>{
   const pp=$("#payPrev"); if(pp) pp.addEventListener("click",()=>payShiftMonth(-1));
   const pn=$("#payNext"); if(pn) pn.addEventListener("click",()=>payShiftMonth(1));
   const pt=$("#payThis"); if(pt) pt.addEventListener("click",()=>{ paySetMonth(payMonth()); payStatus("불러오는 중…",""); payFetch(); });
+  const at=$("#payAddToggle"); if(at) at.addEventListener("click",()=>{ const f=$("#payAddForm"); if(f){ f.hidden=!f.hidden; if(!f.hidden&&$("#payAddName")) $("#payAddName").focus(); } });
+  const asv=$("#payAddSave"); if(asv) asv.addEventListener("click",payAddStudent);
+  const acn=$("#payAddCancel"); if(acn) acn.addEventListener("click",()=>{ $("#payAddForm").hidden=true; payAddMsg("",""); });
   const tN=$("#payTabNow"); if(tN) tN.addEventListener("click",()=>payTab(false));
   const tH=$("#payTabHist"); if(tH) tH.addEventListener("click",()=>payTab(true));
   const tb=$("#payTable");
@@ -1690,7 +1749,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     else PAYSEL=-1;
   }
   if(tb){
-    tb.addEventListener("click",e=>{const d=e.target.closest(".pay-drop"); paySelect(d||null);});
+    tb.addEventListener("click",e=>{const u=e.target.closest(".pay-undo"); if(u){ payRevert(+u.dataset.i); return;} const d=e.target.closest(".pay-drop"); paySelect(d||null);});
     tb.addEventListener("keydown",e=>{const d=e.target.closest(".pay-drop"); if(d&&(e.key==="Enter"||e.key===" ")){ e.preventDefault(); payMark(+d.dataset.i); }});
     tb.addEventListener("dragover",e=>{const d=e.target.closest(".pay-drop"); if(d){e.preventDefault(); d.classList.add("over");}});
     tb.addEventListener("dragleave",e=>{const d=e.target.closest(".pay-drop"); if(d) d.classList.remove("over");});
