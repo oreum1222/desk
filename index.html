@@ -104,6 +104,14 @@ table.pay-hist th.mcur{color:var(--accent)}
 #unpaidBanner.ub-ok h3{color:var(--accent)}
 #unpaidBanner.ub-warn{border-color:var(--warn);background:rgba(210,150,60,.10)}
 #unpaidBanner.ub-warn h3{color:var(--warn)}
+.ub-allbtn{margin-top:12px;background:var(--bg);border:1px solid var(--border-strong);color:var(--text);border-radius:9px;padding:8px 14px;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
+.ub-allbtn:hover{border-color:var(--danger);color:var(--danger)}
+#auList{display:flex;flex-direction:column;gap:0;margin-top:4px}
+.au-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--border)}
+.au-row b{font-size:13.5px;color:var(--text)}
+.au-row .au-sc{font-size:12px;color:var(--muted)}
+.au-row .au-tag{font-size:11.5px;color:var(--danger);font-weight:700;white-space:nowrap}
+.au-today{background:var(--danger-soft);border-radius:7px}
 .pay-done{display:inline-flex;align-items:center;gap:6px;color:var(--accent);font-weight:700;font-size:12.5px;white-space:nowrap}
 .pay-done .who{color:var(--muted);font-weight:600;font-size:11.5px}
 tr.paid-row td{opacity:.72}
@@ -776,6 +784,17 @@ footer b{color:var(--text)}
         <div style="overflow-x:auto"><table id="payHistTable" class="pay-hist"><thead></thead><tbody></tbody></table></div>
         <p style="font-size:11.5px;color:var(--muted);margin-top:10px"><b>O</b> = 계좌이체 처리완료 · <b>–</b> = 미처리(전산·현금 등 별도 확인). 칸에 마우스를 올리면 처리자·시각이 표시됩니다.</p>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- 전체 미납자 팝업 -->
+<div class="modal" id="allUnpaidModal">
+  <div class="fbox" style="width:min(640px,95vw)">
+    <div class="faq-head"><div><h3>📋 전체 미납자</h3><p class="fsub" id="auSub">makeedu 통합수납 미납 기준</p></div><button class="faq-x" id="auX">✕</button></div>
+    <div class="faq-body">
+      <input id="auSearch" placeholder="이름·학교 검색" style="width:100%;box-sizing:border-box;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:9px 12px;font-family:inherit;font-size:13px;margin-bottom:10px" />
+      <div id="auList"></div>
     </div>
   </div>
 </div>
@@ -1539,7 +1558,7 @@ function applyTheme(t){
   const b=$("#themeBtn"); if(b) b.textContent = t==="light" ? "☀️" : "🌙";
   try{ localStorage.setItem("deskTheme",t); }catch(e){}
 }
-(function(){ let t="dark"; try{ t=localStorage.getItem("deskTheme")||"dark"; }catch(e){} applyTheme(t); })();
+(function(){ let t="light"; try{ t=localStorage.getItem("deskTheme")||"light"; }catch(e){} applyTheme(t); })();
 document.addEventListener("DOMContentLoaded",()=>{
   const b=$("#themeBtn"); if(b) b.addEventListener("click",()=>{
     const cur=document.documentElement.getAttribute("data-theme")==="light"?"light":"dark";
@@ -1676,7 +1695,7 @@ function renderUnpaidBanner(){
     }
     if(!list.length){
       el.className="ub-ok"; el.hidden=false;
-      el.innerHTML=`<h3>✅ 오늘 수업 미납자 없음</h3><p class="ub-sub">${ts?("makeedu 기준 "+ts+" 갱신"):"동기화 대기 중"}</p>`;
+      el.innerHTML=`<h3>✅ 오늘 수업 미납자 없음</h3><p class="ub-sub">${ts?("makeedu 기준 "+ts+" 갱신"):"동기화 대기 중"}</p><button class="ub-allbtn" onclick="openAllUnpaid()">📋 전체 미납자 보기</button>`;
       return;
     }
     const chips=list.map(s=>{
@@ -1685,8 +1704,32 @@ function renderUnpaidBanner(){
       return `<div class="ub-chip"><b>${s.student||""} <span>${(s.school||"")} ${(s.grade||"")}</span></b>${cls?`<span>${cls}</span>`:""}<span class="ub-amt">미납${amt>0?(" "+amt.toLocaleString()+"원"):""}</span></div>`;
     }).join("");
     el.hidden=false;
-    el.innerHTML=`<h3>⚠️ 미납자 ${list.length}명 — 등원 시 확인</h3><p class="ub-sub">makeedu 기준 ${ts||""} 갱신 · 하루 3회(11시·15시·21:30) 자동 반영</p><div class="ub-list">${chips}</div>`;
+    el.innerHTML=`<h3>⚠️ 오늘 수업 미납자 ${list.length}명 — 등원 시 확인</h3><p class="ub-sub">오늘 수업 명단 × 미납 교차 · makeedu 기준 ${ts||""} 갱신 · 하루 3회(11시·15시·21:30) 자동 반영</p><div class="ub-list">${chips}</div><button class="ub-allbtn" onclick="openAllUnpaid()">📋 전체 미납자 보기</button>`;
   }).catch(()=>{});
+}
+/* ===== 전체 미납자 팝업 ===== */
+let AUCACHE=[], AUTODAY=new Set();
+function renderAllUnpaid(q){
+  const el=$("#auList"); if(!el) return;
+  q=(q||"").trim();
+  const rows=AUCACHE.filter(s=>!q || (s.name||"").includes(q) || (s.school||"").includes(q));
+  if(!rows.length){ el.innerHTML=`<div style="color:var(--muted);padding:16px;text-align:center">${AUCACHE.length?"검색 결과 없음":"미납자 없음 또는 동기화 대기"}</div>`; return; }
+  el.innerHTML=rows.map(s=>{
+    const today=AUTODAY.has(s.name);
+    return `<div class="au-row${today?' au-today':''}"><div><b>${s.name||""}</b> <span class="au-sc">${(s.school||"")} ${(s.grade||"")}</span></div>${today?'<span class="au-tag">오늘 수업</span>':'<span class="au-sc">미납</span>'}</div>`;
+  }).join("");
+}
+function openAllUnpaid(){
+  const m=$("#allUnpaidModal"); if(m) m.classList.add("on");
+  if($("#auSearch")) $("#auSearch").value="";
+  $("#auList").innerHTML=`<div style="color:var(--muted);padding:16px;text-align:center">불러오는 중…</div>`;
+  // 오늘 수업 미납자 이름(강조용)
+  fetch(LOG_URL+"?action=todayunpaid&cb="+Date.now()).then(r=>r.json()).then(j=>{ AUTODAY=new Set(((j&&j.students)||[]).map(s=>s.student)); }).catch(()=>{});
+  fetch(LOG_URL+"?action=allunpaid&cb="+Date.now()).then(r=>r.json()).then(j=>{
+    AUCACHE=(j&&Array.isArray(j.all))?j.all:[];
+    const sub=$("#auSub"); if(sub) sub.textContent="makeedu 통합수납 미납 "+AUCACHE.length+"명"+(j&&j.ts?(" · "+j.ts+" 갱신"):"");
+    renderAllUnpaid("");
+  }).catch(()=>{ $("#auList").innerHTML=`<div style="color:var(--danger);padding:16px;text-align:center">불러오기 실패</div>`; });
 }
 function openPay(){ $("#payModal").classList.add("on"); paySetMonth(payMonth()); payFetch(); }
 function payInit(){                    // 홈 첫 진입 시 계좌이체 수납 현황판 자동 팝업(명단 있을 때만)
@@ -1739,6 +1782,9 @@ document.addEventListener("DOMContentLoaded",()=>{
   const at=$("#payAddToggle"); if(at) at.addEventListener("click",()=>{ const f=$("#payAddForm"); if(f){ f.hidden=!f.hidden; if(!f.hidden&&$("#payAddName")) $("#payAddName").focus(); } });
   const asv=$("#payAddSave"); if(asv) asv.addEventListener("click",payAddStudent);
   const acn=$("#payAddCancel"); if(acn) acn.addEventListener("click",()=>{ $("#payAddForm").hidden=true; payAddMsg("",""); });
+  const aux=$("#auX"); if(aux) aux.addEventListener("click",()=>$("#allUnpaidModal").classList.remove("on"));
+  const aum=$("#allUnpaidModal"); if(aum) aum.addEventListener("click",e=>{if(e.target===aum)aum.classList.remove("on");});
+  const aus=$("#auSearch"); if(aus) aus.addEventListener("input",()=>renderAllUnpaid(aus.value));
   const tN=$("#payTabNow"); if(tN) tN.addEventListener("click",()=>payTab(false));
   const tH=$("#payTabHist"); if(tH) tH.addEventListener("click",()=>payTab(true));
   const tb=$("#payTable");
