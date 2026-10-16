@@ -84,7 +84,7 @@
 .pay-nav:hover{border-color:var(--accent);color:var(--accent)}
 .pay-card{margin-left:8px;border:1px solid var(--border-strong);background:transparent;color:var(--muted);border-radius:8px;padding:5px 10px;font-size:11.5px;font-family:inherit;cursor:pointer;white-space:nowrap}
 .pay-card:hover{border-color:var(--warn);color:var(--warn)}
-.pay-done.card{color:var(--warn)}
+.pay-done.pcard{color:var(--warn)}
 .pay-undo{margin-left:8px;border:1px solid var(--border-strong);background:transparent;color:var(--muted);border-radius:7px;padding:3px 8px;font-size:11px;font-family:inherit;cursor:pointer;white-space:nowrap}
 .pay-undo:hover{border-color:var(--danger);color:var(--danger)}
 table.pay-hist{border-collapse:collapse;width:100%;font-size:12.5px}
@@ -1607,7 +1607,7 @@ function renderPay(){
     const done=!!(s[4]&&String(s[4]).trim());
     const isCard=done && String(s[6]||"").indexOf("카드")>=0;
     const cell=done
-      ? `<span class="pay-done${isCard?' card':''}">${isCard?"💳 카드결제":"✅ 처리완료"} <span class="who">${s[4]}${s[5]?" · "+s[5]:""}</span></span> <button class="pay-undo" data-i="${i}" title="처리 되돌리기(PIN 필요)">↩ 되돌리기</button>`
+      ? `<span class="pay-done${isCard?' pcard':''}">${isCard?"💳 카드결제":"✅ 처리완료"} <span class="who">${s[4]}${s[5]?" · "+s[5]:""}</span></span> <button class="pay-undo" data-i="${i}" title="처리 되돌리기(PIN 필요)">↩ 되돌리기</button>`
       : `<span class="pay-drop" data-i="${i}" tabindex="0">📎 캡쳐 놓기 → 처리완료</span> <button class="pay-card" data-i="${i}" title="이번 달 카드결제로 처리">💳 카드</button>`;
     return `<tr class="${done?'paid-row':''}"><td><b>${s[0]||""}</b></td><td>${(s[2]||"")} ${(s[1]||"")}</td><td style="color:${(s[3]||'').trim()?'var(--warn)':'var(--muted)'};font-weight:${(s[3]||'').trim()?'700':'400'}">${(s[3]||'').trim()||'-'}</td><td>${cell}</td></tr>`;
   }).join('');
