@@ -107,6 +107,13 @@ table.pay-hist th.mcur{color:var(--accent)}
 #unpaidBanner.ub-ok h3{color:var(--accent)}
 #unpaidBanner.ub-warn{border-color:var(--warn);background:rgba(210,150,60,.10)}
 #unpaidBanner.ub-warn h3{color:var(--warn)}
+#rosterBar{margin:0 0 12px;border:1px solid var(--border-strong);background:var(--accent-soft);border-radius:14px;padding:12px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px}
+#rosterBar .rb-total{font-size:15.5px;font-weight:800;color:var(--text)}
+#rosterBar .rb-total b{color:var(--accent);font-size:19px}
+#rosterBar .rb-chip{font-size:13.5px;color:var(--text)}
+#rosterBar .rb-chip b{font-size:15px}
+#rosterBar .rb-chip.on b{color:var(--accent)}
+#rosterBar .rb-ts{font-size:11.5px;color:var(--muted);margin-left:auto}
 .ub-allbtn{margin-top:12px;background:var(--bg);border:1px solid var(--border-strong);color:var(--text);border-radius:9px;padding:8px 14px;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
 .ub-allbtn:hover{border-color:var(--danger);color:var(--danger)}
 #auList{display:flex;flex-direction:column;gap:0;margin-top:4px}
@@ -517,6 +524,7 @@ footer b{color:var(--text)}
 
   <!-- ░░ 대시보드 ░░ -->
   <section class="panel active" id="dash">
+    <div id="rosterBar" hidden></div>
     <div id="unpaidBanner" hidden></div>
     <p class="sub">데스크 상담 대시보드 — 수강료 계산 · 상담 내역 전송 · 2학기/학사 일정 · 강사 연락처.</p>
     <button class="desk-btn" id="payBtn" style="margin-bottom:16px;border-color:var(--border-strong);color:var(--accent)">💳 계좌이체 수강료 명단 보기</button>
@@ -1707,6 +1715,19 @@ function payRevert(i){
     }).catch(()=>payStatus("확인 실패 — 새로고침 해보세요.","err"));
   },1500)).catch(()=>payStatus("전송 실패 — 다시 시도하세요.","err"));
 }
+/* ===== 오늘 원생 변동 (makeedu 원생목록·퇴원생 목록, 미납 동기화 때 함께 갱신) ===== */
+function renderRosterBar(){
+  const el=$("#rosterBar"); if(!el||!LOG_URL) return;
+  fetch(LOG_URL+"?action=roster&cb="+Date.now()).then(r=>r.json()).then(j=>{
+    if(!j||!(j.total>0)) return;
+    const n=new Date(); const today=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0")+"-"+String(n.getDate()).padStart(2,"0");
+    const isToday=(j.date===today);
+    const chip=(label,v)=>`<span class="rb-chip${v>0?" on":""}">${label} <b>${isToday?v:0}</b>명</span>`;
+    const when=isToday?("makeedu 기준 "+(j.ts||"")+" 갱신"):("오늘 동기화 전, 최근 "+(j.ts||j.date));
+    el.hidden=false;
+    el.innerHTML=`<span class="rb-total">오늘 수강생 <b>${j.total}</b>명</span>${chip("신규",j.newToday)}${chip("휴원 시작",j.leaveStart)}${chip("퇴원",j.dropToday)}<span class="rb-ts">${when}</span>`;
+  }).catch(()=>{});
+}
 /* ===== 오늘 수업 미납자 배너 (makeedu 동기화 데이터) ===== */
 function renderUnpaidBanner(){
   const el=$("#unpaidBanner"); if(!el||!LOG_URL) return;
@@ -1964,6 +1985,7 @@ function rfCalc(){
 rfCalc();
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeFaq();$("#vacModal").classList.remove("on");$("#fallModal").classList.remove("on");$("#schModal").classList.remove("on");}});
 payInit();  // 홈 첫 진입 시 계좌이체 수납 현황판 자동 팝업(명단 있을 때만)
+renderRosterBar();     // 오늘 원생 변동(총인원, 신규, 휴원 시작, 퇴원)
 renderUnpaidBanner();  // 오늘 수업 미납자 배너(makeedu 동기화)
 </script>
 
