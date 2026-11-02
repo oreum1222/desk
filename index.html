@@ -73,6 +73,37 @@
 .bk-delta{margin-left:9px;font-size:11px;font-weight:800;padding:1px 6px;border-radius:5px;white-space:nowrap}
 .bk-delta.dn{color:var(--danger);background:var(--danger-soft)}
 .bk-delta.up{color:var(--accent);background:var(--accent-soft)}
+/* 중등 연간 커리큘럼 타임라인 */
+.cur-wrap{overflow-x:auto;padding:12px 18px 6px}
+.cur-tl{min-width:680px}
+.cur-grid{display:grid;grid-template-rows:auto auto 1fr auto 1fr;gap:9px 0}
+.cur-row{display:grid;grid-template-columns:5.4em repeat(10,1fr);align-items:center;column-gap:4px}
+.cur-rl{font-size:12px;font-weight:700;color:var(--text);line-height:1.2}
+.cur-rl small{display:block;color:var(--muted);font-weight:500;font-size:10.5px;margin-top:2px}
+.cur-bd{height:27px;border:1px solid var(--border);border-radius:9px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--text);background:var(--surface)}
+.cur-bd i{color:var(--muted);font-weight:500;font-style:normal;font-size:10.5px}
+.cur-bd.vac{border-style:dashed;background:transparent;color:var(--muted)}
+.cur-mon{position:relative;text-align:center;font-size:12.5px;font-weight:700;color:var(--text)}
+.cur-mon.now{color:#fff;background:var(--accent);border-radius:6px;padding:2px 0;box-shadow:0 0 0 3px var(--accent-soft)}
+:root[data-theme="light"] .cur-mon.now{color:#fff}
+.cur-mon .now-tag{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);margin-bottom:5px;white-space:nowrap;font-size:10.5px;font-weight:800;color:var(--accent-deep);line-height:1;background:var(--surface);padding:1px 6px;border-radius:6px;border:1px solid var(--border-strong);z-index:5}
+.cur-axis{grid-column:2 / -1;height:2px;background:var(--border);align-self:center}
+.cur-cell{display:flex;flex-direction:column;align-items:center;gap:5px;padding:0 3px}
+.cur-node{width:11px;height:11px;flex:none}
+.cur-node.dia{background:var(--accent);transform:rotate(45deg);border-radius:2px;box-shadow:0 0 0 4px var(--accent-soft)}
+.cur-node.dot{background:var(--muted);border-radius:50%;box-shadow:0 0 0 4px var(--surface-2)}
+.cur-card{width:100%;border-radius:10px;padding:8px 7px;text-align:center;border:1px solid var(--border);background:var(--surface)}
+.cur-card .ct{font-size:12px;font-weight:700;line-height:1.25;color:var(--text)}
+.cur-card .cd{font-size:10.5px;color:var(--muted);line-height:1.3;margin-top:3px}
+.cur-card.naesin{border-color:var(--border-strong);background:var(--accent-soft)}
+.cur-card.naesin .ct{color:var(--accent-deep)}
+.cur-card.vacat{border-color:var(--warn);background:transparent}
+.cur-card.vacat .ct{color:var(--warn)}
+.cur-vac{display:flex;flex-direction:column;align-items:center;gap:5px}
+.cur-star{width:13px;height:13px;color:var(--warn);flex:none}
+.cur-foot{display:flex;flex-wrap:wrap;gap:9px;padding:6px 18px 16px}
+.cur-note{flex:1;min-width:230px;border:1px solid var(--border);border-radius:11px;padding:10px 14px;background:var(--surface-2);font-size:12px;font-weight:600;color:var(--text);line-height:1.5}
+.cur-note b{color:var(--accent-deep)}
 .pay-drop{display:inline-flex;align-items:center;gap:6px;border:1.5px dashed var(--border-strong);color:var(--muted);border-radius:9px;padding:7px 11px;font-size:12px;cursor:pointer;transition:.15s;white-space:nowrap}
 .pay-drop:hover,.pay-drop.over{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
 .pay-drop.sel{background:var(--accent-soft);border-style:solid;border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
@@ -692,10 +723,51 @@ footer b{color:var(--text)}
     </div>
     <div class="tablecard">
       <div class="th">중2 · 중3 연간 커리큘럼 <span class="pin">— 중2·중3 동일 구조</span></div>
-      <div style="padding:14px 18px 4px">
-        <div class="legend"><span><i style="background:var(--muted)"></i>비내신(정규)</span><span><i style="background:var(--accent)"></i>내신 집중</span><span><i style="background:var(--warn)"></i>여름/겨울 특강</span></div>
+      <div style="padding:14px 18px 2px">
+        <div class="legend"><span><i style="background:var(--muted)"></i>기초 다지기</span><span><i style="background:var(--accent)"></i>내신 집중</span><span><i style="background:var(--warn)"></i>방학 특강</span></div>
       </div>
-      <table><thead><tr><th>월</th><th>구분</th><th>과정</th><th>세부 내용</th></tr></thead><tbody id="midCurri"></tbody></table>
+      <div class="cur-wrap"><div class="cur-tl" id="midCurri">
+        <div class="cur-grid">
+          <!-- 학기 밴드 -->
+          <div class="cur-row">
+            <div class="cur-rl" style="font-weight:600;color:var(--muted);font-size:11px">학기</div>
+            <div class="cur-bd" style="grid-column:2 / span 4">1학기 <i>3~6월</i></div>
+            <div class="cur-bd vac" style="grid-column:6 / span 2">여름방학</div>
+            <div class="cur-bd" style="grid-column:8 / span 3">2학기 <i>9~11월</i></div>
+            <div class="cur-bd vac" style="grid-column:11">겨울</div>
+          </div>
+          <!-- 월 눈금 -->
+          <div class="cur-row">
+            <div class="cur-rl"></div>
+            <div class="cur-mon" data-m="3">3월</div><div class="cur-mon" data-m="4">4월</div><div class="cur-mon" data-m="5">5월</div>
+            <div class="cur-mon" data-m="6">6월</div><div class="cur-mon" data-m="7">7월</div><div class="cur-mon" data-m="8">8월</div>
+            <div class="cur-mon" data-m="9">9월</div><div class="cur-mon" data-m="10">10월</div><div class="cur-mon" data-m="11">11월</div><div class="cur-mon" data-m="12">12월</div>
+          </div>
+          <!-- 위 레인: 내신 집중 -->
+          <div class="cur-row">
+            <div class="cur-rl">내신 집중<small>학교 정기 시험</small></div>
+            <div class="cur-cell" style="grid-column:3"><div class="cur-card naesin"><div class="ct">학교별 내신</div><div class="cd">1차고사 대비</div></div><div class="cur-node dia"></div></div>
+            <div class="cur-cell" style="grid-column:5"><div class="cur-card naesin"><div class="ct">학교별 내신</div><div class="cd">2차고사 대비</div></div><div class="cur-node dia"></div></div>
+            <div class="cur-cell" style="grid-column:8"><div class="cur-card naesin"><div class="ct">학교별 내신</div><div class="cd">3차고사 대비</div></div><div class="cur-node dia"></div></div>
+            <div class="cur-cell" style="grid-column:10"><div class="cur-card naesin"><div class="ct">학교별 내신</div><div class="cd">4차고사 대비</div></div><div class="cur-node dia"></div></div>
+          </div>
+          <!-- 중심 축선 -->
+          <div class="cur-row"><div class="cur-rl"></div><div class="cur-axis"></div></div>
+          <!-- 아래 레인: 기초와 방학 특강 -->
+          <div class="cur-row">
+            <div class="cur-rl">기초와 심화<small>평소, 방학</small></div>
+            <div class="cur-cell" style="grid-column:2"><div class="cur-node dot"></div><div class="cur-card"><div class="ct">문학과 문법 기초</div><div class="cd">현대시, 현대소설</div></div></div>
+            <div class="cur-cell" style="grid-column:4"><div class="cur-node dot"></div><div class="cur-card"><div class="ct">문학과 문법 기초</div><div class="cd">중등 필수 문법</div></div></div>
+            <div class="cur-vac" style="grid-column:6 / span 2"><svg class="cur-star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.6 6.3L21 9l-5 4.3L17.5 20 12 16.4 6.5 20 8 13.3 3 9l6.4-.7z"/></svg><div class="cur-card vacat"><div class="ct">여름 집중 과정</div><div class="cd">심화 국어, 고전 입문</div></div></div>
+            <div class="cur-cell" style="grid-column:9"><div class="cur-node dot"></div><div class="cur-card"><div class="ct">문학과 문법 기초</div><div class="cd">현대시, 현대소설</div></div></div>
+            <div class="cur-vac" style="grid-column:11"><svg class="cur-star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.6 6.3L21 9l-5 4.3L17.5 20 12 16.4 6.5 20 8 13.3 3 9l6.4-.7z"/></svg><div class="cur-card vacat"><div class="ct">겨울방학 전과정</div><div class="cd">심화 학습, 겨울 전략</div></div></div>
+          </div>
+        </div>
+      </div></div>
+      <div class="cur-foot">
+        <div class="cur-note">시험 있는 달은 <b>학교 교과서와 기출</b>, 그 사이 달은 <b>문학과 문법 기초</b>로 번갈아 다집니다.</div>
+        <div class="cur-note">여름과 겨울 방학마다 <b>심화와 고전</b>으로 한 단계 도약합니다.</div>
+      </div>
     </div>
     <div class="tablecard">
       <div class="th">고1 · 고2 연간 커리큘럼 <span class="pin">— 고1·고2 공통 흐름</span></div>
@@ -1386,9 +1458,17 @@ function renderFit(){
 }
 function renderCurri(){
   $("#sysList").innerHTML=SYS.map(s=>`<li>${s}</li>`).join('');
-  const mc={x:'var(--muted)',i:'var(--accent)',s:'var(--warn)'};
-  $("#midCurri").innerHTML=MIDCURRI.map(r=>`<tr><td><b>${r[0]}</b></td><td><span style="color:${mc[r[4]]};font-weight:700">●</span> ${r[1]}</td><td>${r[2]}</td><td style="color:var(--muted)">${r[3]}</td></tr>`).join('');
   $("#hi1Curri").innerHTML=HI1CURRI.map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td></tr>`).join('');
+  markCurriNow();
+}
+function markCurriNow(){
+  var cur=new Date().getMonth()+1;   // 오늘 기준 월
+  document.querySelectorAll('#midCurri .cur-mon').forEach(function(el){
+    if(parseInt(el.getAttribute('data-m'),10)===cur){
+      el.classList.add('now');
+      var t=document.createElement('span'); t.className='now-tag'; t.textContent='지금 여기 ▼'; el.appendChild(t);
+    }
+  });
 }
 
 /* ===== EVENTS ===== */
