@@ -104,6 +104,7 @@
 .cur-foot{display:flex;flex-wrap:wrap;gap:9px;padding:6px 18px 16px}
 .cur-note{flex:1;min-width:230px;border:1px solid var(--border);border-radius:11px;padding:10px 14px;background:var(--surface-2);font-size:12px;font-weight:600;color:var(--text);line-height:1.5}
 .cur-note b{color:var(--accent-deep)}
+.cur-grid.cols9 .cur-row{grid-template-columns:5.4em repeat(9,1fr)}
 .pay-drop{display:inline-flex;align-items:center;gap:6px;border:1.5px dashed var(--border-strong);color:var(--muted);border-radius:9px;padding:7px 11px;font-size:12px;cursor:pointer;transition:.15s;white-space:nowrap}
 .pay-drop:hover,.pay-drop.over{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
 .pay-drop.sel{background:var(--accent-soft);border-style:solid;border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
@@ -771,7 +772,52 @@ footer b{color:var(--text)}
     </div>
     <div class="tablecard">
       <div class="th">고1 · 고2 연간 커리큘럼 <span class="pin">— 고1·고2 공통 흐름</span></div>
-      <table><thead><tr><th>시기</th><th>과정</th></tr></thead><tbody id="hi1Curri"></tbody></table>
+      <div style="padding:14px 18px 2px">
+        <div class="legend"><span><i style="background:var(--muted)"></i>수능 대비</span><span><i style="background:var(--accent)"></i>내신 집중</span><span><i style="background:var(--warn)"></i>방학 특강</span></div>
+      </div>
+      <div class="cur-wrap"><div class="cur-tl" id="hi1Curri">
+        <div class="cur-grid cols9">
+          <!-- 학기 밴드 -->
+          <div class="cur-row">
+            <div class="cur-rl" style="font-weight:600;color:var(--muted);font-size:11px">학기</div>
+            <div class="cur-bd" style="grid-column:2 / span 2">1학기 <i>5~6월</i></div>
+            <div class="cur-bd vac" style="grid-column:4 / span 2">여름방학</div>
+            <div class="cur-bd" style="grid-column:6 / span 4">2학기 <i>9~12월</i></div>
+            <div class="cur-bd vac" style="grid-column:10">겨울</div>
+          </div>
+          <!-- 월 눈금 -->
+          <div class="cur-row">
+            <div class="cur-rl"></div>
+            <div class="cur-mon" data-m="5">5월</div><div class="cur-mon" data-m="6">6월</div>
+            <div class="cur-mon" data-m="7">7월</div><div class="cur-mon" data-m="8">8월</div>
+            <div class="cur-mon" data-m="9">9월</div><div class="cur-mon" data-m="10">10월</div>
+            <div class="cur-mon" data-m="11">11월</div><div class="cur-mon" data-m="12">12월</div>
+            <div class="cur-mon" data-m="1">1월</div>
+          </div>
+          <!-- 위 레인: 내신 집중 -->
+          <div class="cur-row">
+            <div class="cur-rl">내신 집중<small>학교 정기 시험</small></div>
+            <div class="cur-cell" style="grid-column:3"><div class="cur-card naesin"><div class="ct">기말고사</div><div class="cd">내신 집중 완성</div></div><div class="cur-node dia"></div></div>
+            <div class="cur-cell" style="grid-column:6"><div class="cur-card naesin"><div class="ct">중간고사</div><div class="cd">2학기 첫 내신</div></div><div class="cur-node dia"></div></div>
+            <div class="cur-cell" style="grid-column:8"><div class="cur-card naesin"><div class="ct">기말고사</div><div class="cd">내신 마지막</div></div><div class="cur-node dia"></div></div>
+          </div>
+          <!-- 중심 축선 -->
+          <div class="cur-row"><div class="cur-rl"></div><div class="cur-axis"></div></div>
+          <!-- 아래 레인: 수능과 방학 -->
+          <div class="cur-row">
+            <div class="cur-rl">수능과 방학<small>학평, 특강</small></div>
+            <div class="cur-cell" style="grid-column:2"><div class="cur-node dot"></div><div class="cur-card"><div class="ct">학평과 기말 준비</div><div class="cd">6월 학평, 기본기</div></div></div>
+            <div class="cur-vac" style="grid-column:4 / span 2"><svg class="cur-star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.6 6.3L21 9l-5 4.3L17.5 20 12 16.4 6.5 20 8 13.3 3 9l6.4-.7z"/></svg><div class="cur-card vacat"><div class="ct">여름방학 특강</div><div class="cd">수능 개념, 독해 뼈대</div></div></div>
+            <div class="cur-cell" style="grid-column:7"><div class="cur-node dot"></div><div class="cur-card"><div class="ct">11월 학평 대비</div><div class="cd">수능 모의고사</div></div></div>
+            <div class="cur-cell" style="grid-column:9"><div class="cur-node dot"></div><div class="cur-card"><div class="ct">학년 마무리</div><div class="cd">기말 마무리, 진학</div></div></div>
+            <div class="cur-vac" style="grid-column:10"><svg class="cur-star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.6 6.3L21 9l-5 4.3L17.5 20 12 16.4 6.5 20 8 13.3 3 9l6.4-.7z"/></svg><div class="cur-card vacat"><div class="ct">진급과 예비 과정</div><div class="cd">예비 고2, 고3 시작</div></div></div>
+          </div>
+        </div>
+      </div></div>
+      <div class="cur-foot">
+        <div class="cur-note">학교 시험이 있는 달은 <b>내신</b>, 학평이 있는 달은 <b>수능 모의고사</b>로 대비합니다.</div>
+        <div class="cur-note">방학마다 <b>수능 개념과 독해</b>의 뼈대를 세우고, 겨울에 다음 학년을 준비합니다.</div>
+      </div>
     </div>
   </section>
 
@@ -1458,12 +1504,11 @@ function renderFit(){
 }
 function renderCurri(){
   $("#sysList").innerHTML=SYS.map(s=>`<li>${s}</li>`).join('');
-  $("#hi1Curri").innerHTML=HI1CURRI.map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td></tr>`).join('');
   markCurriNow();
 }
 function markCurriNow(){
   var cur=new Date().getMonth()+1;   // 오늘 기준 월
-  document.querySelectorAll('#midCurri .cur-mon').forEach(function(el){
+  document.querySelectorAll('#midCurri .cur-mon, #hi1Curri .cur-mon').forEach(function(el){
     if(parseInt(el.getAttribute('data-m'),10)===cur){
       el.classList.add('now');
       var t=document.createElement('span'); t.className='now-tag'; t.textContent='지금 여기 ▼'; el.appendChild(t);
