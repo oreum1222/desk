@@ -316,6 +316,16 @@ td .seat{font-weight:700}
 .tt-row .seat.low{background:rgba(224,138,138,.14);color:var(--danger)}
 .tt-row .seat.full{background:rgba(255,255,255,.05);color:var(--muted-2)}
 .tt-row .seat .frac{font-weight:500;opacity:.6;margin-left:3px}
+/* 여석 강조 표기: 학교명 옆 큰 배지 + 줄별 현재/정원 */
+.seat-hero{font-weight:800;font-size:16px;padding:5px 12px;border-radius:9px;white-space:nowrap;line-height:1;
+  background:var(--accent-soft);color:var(--accent);border:1px solid var(--border-strong)}
+.seat-hero.low{background:rgba(224,138,138,.15);color:var(--danger);border-color:rgba(224,138,138,.42)}
+.seat-hero.full{background:var(--surface-2);color:var(--muted-2);border-color:var(--border)}
+.tt-h .seat-hero{margin-left:auto}
+.tt-row .seat-hero{font-size:14px;padding:4px 10px}
+.tt-row .cap{font-size:13px;color:var(--muted);white-space:nowrap;font-weight:600}
+.tt-row .cap b{font-weight:800;color:var(--text);font-size:15.5px}
+.tt-row .cap.muted{color:var(--muted);font-weight:600}
 
 .note{background:var(--accent-soft);border:1px solid var(--border-strong);border-radius:12px;
   padding:14px 16px;font-size:13px;color:var(--text);margin-bottom:18px}
@@ -1388,15 +1398,22 @@ function renderTime(){
     const inGrade=CARDS.filter(c=>c.grade===g);
     if(!inGrade.length) return;
     const cards=inGrade.map(c=>{
+      const multi=c.sessions.length>1;
       const rows=c.sessions.map(s=>{
-        let seat;
-        if(s[2]===null && s[3]!==null) seat=`<span class="seat full">정원 ${s[3]}</span>`;
-        else if(s[2]===null) seat=`<span class="seat">문의</span>`;
-        else{const left=s[3]-s[2];const cls=left<=0?'full':left<=2?'low':'';
-          seat=`<span class="seat ${cls}">${left<=0?'마감':'여석 '+left}<span class="frac">${s[2]}/${s[3]}</span></span>`;}
-        return `<div class="tt-row"><div class="r1"><span class="d">${s[0]}</span>${seat}</div><div class="r2"><span class="tch">${s[1]}T</span><span class="sep">·</span><span class="bk">${s[4]}</span></div></div>`;
+        let cap, hero='';
+        if(s[2]===null && s[3]!==null) cap=`<span class="cap muted">정원 ${s[3]}</span>`;
+        else if(s[2]===null) cap=`<span class="cap muted">상담 문의</span>`;
+        else{
+          const left=s[3]-s[2];const cls=left<=0?'full':left<=2?'low':'';
+          cap=`<span class="cap"><b>${s[2]}</b>/${s[3]}</span>`;
+          if(multi) hero=`<span class="seat-hero ${cls}">${left<=0?'마감':'여석 '+left}</span>`;
+        }
+        return `<div class="tt-row"><div class="r1"><span class="d">${s[0]}</span>${cap}${hero}</div><div class="r2"><span class="tch">${s[1]}T</span><span class="sep">·</span><span class="bk">${s[4]}</span></div></div>`;
       }).join('');
-      return `<div class="tt-card"><div class="tt-h"><span class="sname">${c.school}</span><span class="gradebadge">${c.sub||c.grade}</span></div>${rows}</div>`;
+      let headHero='';
+      if(!multi){const s=c.sessions[0];
+        if(s&&s[2]!==null&&s[3]!==null){const left=s[3]-s[2];const cls=left<=0?'full':left<=2?'low':'';headHero=`<span class="seat-hero ${cls}">${left<=0?'마감':'여석 '+left}</span>`;}}
+      return `<div class="tt-card"><div class="tt-h"><span class="sname">${c.school}</span><span class="gradebadge">${c.sub||c.grade}</span>${headHero}</div>${rows}</div>`;
     }).join('');
     const seatTotal=inGrade.reduce((a,c)=>a+c.sessions.length,0);
     cols+=`<div class="tt-col"><h3 class="tt-title">${g}<span class="n">${inGrade.length}반</span></h3>${cards}</div>`;
