@@ -667,16 +667,20 @@ footer b{color:var(--text)}
   <!-- ░░ 성향 진단 ░░ -->
   <!-- ░░ 교재 재고 ░░ -->
   <section class="panel" id="books">
-    <p class="sub">교재 재고 — <b style="color:var(--accent)">교재 주문·제작 시트</b>의 남은 재고를 자동으로 반영합니다. (시트에 배부가 기록된 만큼 재고가 줄어듭니다)</p>
+    <p class="sub">교재 재고 — <b style="color:var(--accent)">고3 모의고사는 makeedu(수납 기준)</b>, 제작·내신 교재는 <b style="color:var(--accent)">주문·제작 시트</b>에서 자동 반영합니다.</p>
     <div class="bk-stats" id="bkStats" style="grid-template-columns:repeat(3,1fr)"></div>
     <div class="controls" style="margin-top:18px">
       <div class="search">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-        <input id="bkq" placeholder="교재명 검색 (예: 상상, 이매진, 3차고사, MEXX)" />
+        <input id="bkq" placeholder="교재명 검색 (예: 상상, 바탕, 이매진, 3차고사)" />
       </div>
     </div>
     <div class="tablecard" style="margin-top:12px">
-      <div class="th">📗 교재별 남은 재고 <span class="pin">— 시트 연동 · 최근 제작일 순</span></div>
+      <div class="th">📕 고3 모의고사 <span class="pin">— makeedu 수납 기준 · 등록일 순 (음수는 초과 배부)</span></div>
+      <table><thead><tr><th>교재명</th><th style="white-space:nowrap">등록일</th><th style="text-align:center">남은</th></tr></thead><tbody id="bkMk"></tbody></table>
+    </div>
+    <div class="tablecard" style="margin-top:12px">
+      <div class="th">📗 제작·내신 교재 <span class="pin">— 주문·제작 시트 · 최근 제작일 순</span></div>
       <table><thead><tr><th>교재명</th><th style="white-space:nowrap">최근 제작</th><th style="text-align:center">남은 재고</th></tr></thead><tbody id="bkUse"></tbody></table>
     </div>
   </section>
@@ -1624,19 +1628,27 @@ function loadBooks(){
     .catch(()=>{ if($("#bkUse")) $("#bkUse").innerHTML='<tr><td colspan="3" style="color:var(--danger);text-align:center;padding:14px">재고를 불러오지 못했습니다 · 새로고침</td></tr>'; });
 }
 function renderBooks(){
-  const stats=$("#bkStats"), body=$("#bkUse"); if(!body) return;
-  if(!BOOKDATA){ if(stats) stats.innerHTML=''; body.innerHTML='<tr><td colspan="3" style="color:var(--muted);text-align:center;padding:14px">불러오는 중…</td></tr>'; return; }
-  const books=BOOKDATA.books||[];
+  const stats=$("#bkStats"), body=$("#bkUse"), mkBody=$("#bkMk"); if(!body) return;
+  if(!BOOKDATA){ if(stats) stats.innerHTML=''; body.innerHTML='<tr><td colspan="3" style="color:var(--muted);text-align:center;padding:14px">불러오는 중…</td></tr>'; if(mkBody) mkBody.innerHTML=''; return; }
+  const books=BOOKDATA.books||[], mk=BOOKDATA.mk||[];
   const q=(($("#bkq")&&$("#bkq").value)||"").trim().toLowerCase();
-  const list=q?books.filter(b=>(b.name||"").toLowerCase().includes(q)):books;
-  const emptyRow='<tr><td colspan="3" style="color:var(--muted);text-align:center;padding:14px">해당 교재 없음</td></tr>';
-  body.innerHTML=list.length?list.map(b=>
+  const fb=q?books.filter(b=>(b.name||"").toLowerCase().includes(q)):books;
+  const fmk=q?mk.filter(b=>(b.name||"").toLowerCase().includes(q)):mk;
+  const empty=t=>`<tr><td colspan="3" style="color:var(--muted);text-align:center;padding:14px">${t}</td></tr>`;
+  body.innerHTML=fb.length?fb.map(b=>
     `<tr><td><b>${b.name}</b></td><td style="color:var(--muted);white-space:nowrap">${b.date||'-'}</td>`+
-    `<td style="text-align:center"><b style="font-size:15px">${b.left}</b></td></tr>`).join(''):emptyRow;
+    `<td style="text-align:center"><b style="font-size:15px">${b.left}</b></td></tr>`).join(''):empty('해당 교재 없음');
+  if(mkBody) mkBody.innerHTML=fmk.length?fmk.map(b=>{
+    const over=b.over>0?` <span style="color:var(--danger);font-weight:600;font-size:11px">초과 ${b.over}</span>`:'';
+    const dim=b.left<=0?'color:var(--muted-2)':'';
+    return `<tr><td><b>${b.name}</b></td><td style="color:var(--muted);white-space:nowrap">${b.date||'-'}</td>`+
+      `<td style="text-align:center"><b style="font-size:15px;${dim}">${b.left}</b>${over}</td></tr>`;
+  }).join(''):empty('해당 교재 없음');
+  const mkLeft=mk.reduce((a,b)=>a+(b.left||0),0);
   if(stats) stats.innerHTML=
-    `<div class="bk-stat"><div class="bk-n">${BOOKDATA.total||0}</div><div class="bk-l">총 남은 재고(부)</div></div>`+
-    `<div class="bk-stat"><div class="bk-n">${BOOKDATA.count||books.length}</div><div class="bk-l">교재 종류</div></div>`+
-    `<div class="bk-stat"><div class="bk-n" style="font-size:16px;line-height:1.5">${BOOKDATA.ts||'-'}</div><div class="bk-l">시트 동기화 시각</div></div>`;
+    `<div class="bk-stat"><div class="bk-n">${(BOOKDATA.total||0)+mkLeft}</div><div class="bk-l">총 남은 재고(부)</div></div>`+
+    `<div class="bk-stat"><div class="bk-n">${books.length+mk.length}</div><div class="bk-l">교재 종류 (모의 ${mk.length})</div></div>`+
+    `<div class="bk-stat"><div class="bk-n" style="font-size:16px;line-height:1.5">${BOOKDATA.ts||'-'}</div><div class="bk-l">시트 동기화</div></div>`;
 }
 document.addEventListener("DOMContentLoaded",()=>{
   const q=$("#bkq"); if(q) q.addEventListener("input",renderBooks);
