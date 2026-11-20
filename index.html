@@ -529,6 +529,34 @@ footer b{color:var(--text)}
 .pg-q>summary::before{content:"Q.";color:var(--accent);font-weight:800;flex:none}
 .pg-q>ul{margin:0 0 10px}
 .pg-warn{color:var(--warn);font-weight:700}
+/* 예비 고1 사전 등록 현황 (사전등록 시트 실시간) */
+#preregBar{margin:0 0 12px;border:1px solid var(--border-strong);background:var(--surface);border-radius:14px;padding:12px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;cursor:pointer}
+#preregBar .rb-total{font-size:15.5px;font-weight:800;color:var(--text)}
+#preregBar .rb-total b{color:var(--accent);font-size:19px}
+#preregBar .rb-chip{font-size:13.5px;color:var(--text)}
+#preregBar .rb-chip b{font-size:15px;color:var(--accent)}
+#preregBar .rb-chip.hot b{color:var(--danger)}
+#preregBar .rb-ts{font-size:11.5px;color:var(--muted);margin-left:auto}
+.pr-live{margin:0 0 18px}
+.pr-live h4{margin:0 0 8px;font-size:14px;color:var(--text)}
+.pr-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;margin:0 0 12px}
+.pr-stat{border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;background:var(--surface)}
+.pr-stat span{display:block;font-size:11.5px;color:var(--muted)}
+.pr-stat b{font-size:18px;color:var(--accent)}
+.pr-stat.hot b{color:var(--danger)}
+.pr-tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.pr-tags span{font-size:12px;border:1px solid var(--border);border-radius:999px;padding:3px 9px;color:var(--text);background:var(--bg)}
+.pr-tags span b{color:var(--accent);margin-left:3px}
+.pr-wrap{overflow-x:auto;margin:0 0 14px;border:1px solid var(--border);border-radius:var(--radius-sm)}
+.pr-wrap table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:640px}
+.pr-wrap th,.pr-wrap td{text-align:left;vertical-align:top;padding:7px 8px;border-bottom:1px solid var(--border);line-height:1.45}
+.pr-wrap th{font-size:11.5px;color:var(--muted);font-weight:700;background:var(--accent-soft);white-space:nowrap}
+.pr-wrap td.nm{font-weight:800;white-space:nowrap}
+.pr-yes{color:var(--danger);font-weight:800}
+.pr-ok{color:var(--accent);font-weight:800}
+.pr-note{font-size:12px;color:var(--muted);margin:0 0 10px}
+.pr-lock{font-size:12.5px;color:var(--muted);border:1px dashed var(--border-strong);border-radius:var(--radius-sm);padding:10px 12px;margin:0 0 14px}
+body.desk-on .pr-lock{display:none}
 
 .empty{text-align:center;color:var(--muted);padding:60px 0;font-size:14px}
 
@@ -595,6 +623,7 @@ footer b{color:var(--text)}
   <section class="panel active" id="dash">
     <div id="rosterBar" hidden></div>
     <div id="unpaidBanner" hidden></div>
+    <div id="preregBar" hidden title="눌러서 예비 고1 상담 화면 열기"></div>
     <p class="sub">데스크 상담 대시보드 — 수강료 계산 · 상담 내역 전송 · 2학기/학사 일정 · 강사 연락처.</p>
     <button class="desk-btn" id="payBtn" style="margin-bottom:16px;border-color:var(--border-strong);color:var(--accent)">💳 계좌이체 수강료 명단 보기</button>
 
@@ -874,7 +903,7 @@ footer b{color:var(--text)}
       <div><h3>🎓 예비 고1 상담 가이드</h3><p class="fsub">2027 겨울학기 · 원장 상담 통화(11/8~9) 기준 · 위 요약만 보고 안내, 필요할 때 항목을 눌러 자세히</p></div>
       <button class="faq-x" id="pg1X">✕</button>
     </div>
-    <div class="faq-body" id="pg1Body"></div>
+    <div class="faq-body"><div id="pg1Live"></div><div id="pg1Body"></div></div>
   </div>
 </div>
 
@@ -985,6 +1014,9 @@ const DESK_PIN = "7452";
    (비워두면 아래 내장 데이터로 동작. URL 넣으면 시트가 우선) */
 const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyQb6YBesj192ZvEZi8wIYngDCOX_yMjVikKK63o-CF5IcrARvAQkaR19dzqwAspi5_/exec";
 /* 상담일지 전송 웹앱(별도 · [오름] 데스크 상담 자료 시트) */
+// 예비 고1 사전 등록, 모의고사 클리닉 현황 (Apps Script '오름데스크 사전등록현황' 웹 앱 /exec 주소). 비어 있으면 표시 안 함.
+// 이름 없이 숫자만: ?action=prereg / 명단 포함: &pin=PIN (실장 모드에서만)
+const PREREG_URL = "https://script.google.com/macros/s/AKfycbx-rW1tSYeuGMQC7zsDHfcNZFInnhTGZgf5CATGPNjLbEj-XFcYOL8_CEG-TodQbH_dZw/exec";
 const LOG_URL = "https://script.google.com/macros/s/AKfycbz209OlRV3XtUsbIP0Hgumq90tnScjbegB2tO0Y_dkzgRNc0OKalLI1zzdNxNNVPa0P9w/exec";
 
 /* ===== DATA ===== */
@@ -1580,7 +1612,8 @@ $("#tabs").addEventListener("click",e=>{const b=e.target.closest(".tab");if(!b)r
 /* desk mode + PIN */
 const pin=$("#pin"),pinInput=$("#pinInput"),pinErr=$("#pinErr");
 function setDesk(on){document.body.classList.toggle("desk-on",on);
-  $("#deskLabel").textContent=on?"실장 모드 ON · 끄기":"실장 전용 보기";}
+  $("#deskLabel").textContent=on?"실장 모드 ON · 끄기":"실장 전용 보기";
+  if(!on && PREREG_PIN){ PREREG_PIN=""; loadPrereg(); }}
 $("#deskBtn").addEventListener("click",()=>{
   if(document.body.classList.contains("desk-on")){setDesk(false);return;}
   pin.classList.add("on");pinInput.value="";pinErr.textContent="";setTimeout(()=>pinInput.focus(),50);
@@ -1594,12 +1627,12 @@ async function tryPin(){
       const r=await fetch(WEBAPP_URL+sep+"pin="+encodeURIComponent(entered));
       const j=await r.json();
       const authed=j&&j.cards&&j.cards.some(c=>c.notes&&c.notes.length);
-      if(authed){CARDS=j.cards.filter(keepCard);applyCaps(CARDS);render();renderTime();pin.classList.remove("on");setDesk(true);return;}
+      if(authed){CARDS=j.cards.filter(keepCard);applyCaps(CARDS);render();renderTime();pin.classList.remove("on");setDesk(true);PREREG_PIN=entered;loadPrereg();return;}
       pinErr.textContent="PIN이 올바르지 않습니다";pinInput.value="";pinInput.focus();return;
     }catch(e){pinErr.textContent="연결 오류 — 다시 시도하세요";return;}
   }
   // 오프라인(시트 미연동) 폴백 — 민감정보 없음
-  if(entered===DESK_PIN){pin.classList.remove("on");setDesk(true);}
+  if(entered===DESK_PIN){pin.classList.remove("on");setDesk(true);PREREG_PIN=entered;loadPrereg();}
   else{pinErr.textContent="PIN이 올바르지 않습니다";pinInput.value="";pinInput.focus();}
 }
 $("#pinOk").addEventListener("click",tryPin);
@@ -1844,6 +1877,48 @@ function payRevert(i){
     }).catch(()=>payStatus("확인 실패 — 새로고침 해보세요.","err"));
   },1500)).catch(()=>payStatus("전송 실패 — 다시 시도하세요.","err"));
 }
+/* ===== 예비 고1 사전 등록, 모의고사 클리닉 현황 (사전등록 시트 실시간) =====
+   숫자는 누구나, 이름이 들어간 명단은 실장 모드(PIN)에서만 서버가 내려 준다. */
+let PREREG_PIN="";
+const prEsc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function loadPrereg(){
+  if(!PREREG_URL) return;
+  const u=PREREG_URL+"?action=prereg"+(PREREG_PIN?"&pin="+encodeURIComponent(PREREG_PIN):"")+"&cb="+Date.now();
+  fetch(u).then(r=>r.json()).then(j=>{ if(j&&j.ok) renderPrereg(j); }).catch(()=>{});
+}
+function renderPrereg(j){
+  const s=j.stats||{};
+  const bar=$("#preregBar");
+  if(bar){
+    bar.hidden=false;
+    bar.innerHTML=`<span class="rb-total">🎓 예비 고1 사전 등록 <b>${s.students||0}</b>명</span>`+
+      `<span class="rb-chip${s.clinicLeft<=10?" hot":""}">모의고사 클리닉 <b>${s.clinic||0}</b>/${s.clinicCap||50}명 (남은 자리 ${s.clinicLeft})</span>`+
+      (s.consultReq?`<span class="rb-chip hot">상담 요청 <b>${s.consultReq}</b>건</span>`:"")+
+      `<span class="rb-ts">${prEsc(j.updated)} 기준 / 눌러서 자세히</span>`;
+  }
+  const box=$("#pg1Live"); if(!box) return;
+  const tags=(o,top)=>Object.entries(o||{}).sort((a,b)=>b[1]-a[1]).slice(0,top||20).map(([k,v])=>`<span>${prEsc(k)}<b>${v}</b></span>`).join("");
+  const stat=(label,v,hot)=>`<div class="pr-stat${hot?" hot":""}"><span>${label}</span><b>${v}</b></div>`;
+  let h=`<div class="pr-live"><h4>📋 지금 사전 등록 현황 <span style="font-weight:400;color:var(--muted);font-size:12px">(${prEsc(j.updated)} 기준, 사전등록 시트)</span></h4>
+    <div class="pr-stats">${stat("사전 등록 학생",(s.students||0)+"명")}${stat("고등 국어 처음",(s.firstTime||0)+"명")}${stat("재원생 / 신규",(s.enrolled||0)+" / "+(s.newcomers||0))}
+    ${stat("클리닉 신청",(s.clinic||0)+" / "+(s.clinicCap||50))}${stat("클리닉 남은 자리",s.clinicLeft,s.clinicLeft<=10)}${stat("상담 요청",(s.consultReq||0)+"건",s.consultReq>0)}</div>
+    <p class="pr-note">학생 수는 학부모 번호로 묶어 셉니다(같은 학생이 폼을 두 번 낸 ${s.duplicates||0}건 제외). 클리닉 진단지 발송 ${s.reportSent||0}명${s.clinicNoPrereg?`, 사전 등록 없이 클리닉만 신청 ${s.clinicNoPrereg}명`:""}.</p>`;
+  if(s.days&&Object.keys(s.days).length) h+=`<div class="pr-tags"><span style="border:0;padding-left:0;color:var(--muted)">클리닉 희망 요일</span>${tags(s.days)}</div>`;
+  h+=`<div class="pr-tags"><span style="border:0;padding-left:0;color:var(--muted)">희망 강좌</span>${tags(s.courses,8)}</div>`;
+  h+=`<div class="pr-tags"><span style="border:0;padding-left:0;color:var(--muted)">알게 된 경로</span>${tags(s.routes,8)}</div>`;
+  if(j.clinic||j.students){
+    const cl=(j.clinic||[]).map(c=>`<tr><td>${prEsc(c.no)}</td><td class="nm">${prEsc(c.name)}</td><td>${prEsc(c.school)} ${prEsc(c.grade)}</td><td>${prEsc(c.applied)}</td><td>${prEsc(c.day)||"-"}</td><td>${c.consult?'<span class="pr-yes">요청</span>':""}</td><td>${prEsc(c.memo)}</td><td>${[c.s1,c.s2,c.s3].map(x=>x?'<span class="pr-ok">O</span>':"-").join(" ")}</td><td>${c.report?'<span class="pr-ok">발송</span>':"-"}</td><td>${prEsc(c.parent4)}</td></tr>`).join("");
+    h+=`<h4>✍️ 모의고사 클리닉 신청 명단 (${(j.clinic||[]).length}명, 실장 전용)</h4>
+      <div class="pr-wrap"><table><tr><th>순번</th><th>이름</th><th>학교</th><th>신청</th><th>희망 요일</th><th>상담</th><th>메모</th><th>1/2/3회</th><th>진단지</th><th>학부모 끝번호</th></tr>${cl||'<tr><td colspan="10">아직 없음</td></tr>'}</table></div>`;
+    const st=(j.students||[]).slice().reverse().map(x=>`<tr><td>${prEsc(x.when)}</td><td class="nm">${prEsc(x.name)}${x.dup?' <span class="pr-yes" title="같은 번호로 폼을 두 번 이상 냄">중복</span>':""}</td><td>${prEsc(x.grade)}</td><td>${x.first?"처음":"경험 있음"}</td><td>${prEsc(x.enrolled)}</td><td>${(x.courses||[]).map(prEsc).join("<br>")}</td><td>${prEsc(x.route)}</td><td>${x.clinic?'<span class="pr-ok">신청</span>':"-"}</td><td>${prEsc(x.want)}</td><td>${prEsc(x.parent4)}</td></tr>`).join("");
+    h+=`<h4>🗂 사전 등록 명단 (최근 순, 실장 전용)</h4>
+      <div class="pr-wrap"><table><tr><th>접수</th><th>이름</th><th>학년</th><th>고등 국어</th><th>재원</th><th>희망 강좌</th><th>알게 된 경로</th><th>클리닉</th><th>개설 희망</th><th>학부모 끝번호</th></tr>${st}</table></div>`;
+  } else {
+    h+=`<div class="pr-lock">🔒 클리닉 신청 명단과 사전 등록 명단은 실장 모드(PIN)에서 보입니다.</div>`;
+  }
+  box.innerHTML=h+`</div>`;
+}
+$("#preregBar")?.addEventListener("click",()=>$("#pg1Modal").classList.add("on"));
 /* ===== 오늘 원생 변동 (makeedu 원생목록·퇴원생 목록, 미납 동기화 때 함께 갱신) ===== */
 function renderRosterBar(){
   const el=$("#rosterBar"); if(!el||!LOG_URL) return;
@@ -2011,7 +2086,8 @@ const PREGO1={
    table:[["시기","과정","안내 내용"],
     ["12월","문학 기초","중등보다 조금 높은 문학 작품 체험 + 모의고사 풀이. 문학 개념어·현대문법 수업 아님"],
     ["1월 첫 주~","정식 개강 (8주)","현대문법·문학 개념어·독해 기초를 단과처럼 선택. 같은 강의가 요일·강사별로 여러 개 개설"],
-    ["방학 중","모의고사 클리닉","매주 1회 진행 · <span class='pg-warn'>요일 미정</span>. 강의 수강생도 주 1회 모의고사 숙제"],
+    ["12월","모의고사 클리닉 (사전 등록 혜택)","무료, 선착순 50명. 12월 주 1회씩 총 3회. 수, 목, 금 20:00~21:30 또는 토 10:00~11:30 중 선택. 3회 결과로 개별 진단지 발송, 원장 가경T 직접 참여. 신청은 접수 문자에 학생 이름만 회신"],
+    ["방학 중","모의고사 숙제","강의 수강생도 주 1회 모의고사 숙제"],
     ["2월 초","고교 배정","배정 학교 담당 선생님 수업 선택 가능. 배정 전이라도 1지망이 거의 확실하면 그 학교 담당 선생님 반을 들어도 됨"],
     ["3월","학교별 내신반","개강 후 약 2주 수능 모의고사 수업. 이후 내신·수능 교차로 졸업까지"]],
    li:["올해 1월 개강 이유: 작년 12월 개강 때 아이들 준비 부족 + 연말 가족여행 많음",
@@ -2219,6 +2295,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeFaq();$("#vacM
 payInit();  // 홈 첫 진입 시 계좌이체 수납 현황판 자동 팝업(명단 있을 때만)
 renderRosterBar();     // 오늘 원생 변동(총인원, 신규, 휴원 시작, 퇴원)
 renderUnpaidBanner();  // 오늘 수업 미납자 배너(makeedu 동기화)
+loadPrereg();          // 예비 고1 사전 등록, 클리닉 현황 (PREREG_URL 설정 시)
 </script>
 
 <!-- PWA: 설치 버튼(설치 가능할 때만 표시) -->
