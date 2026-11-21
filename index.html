@@ -578,6 +578,7 @@ body.desk-on .pr-lock{display:none}
     <button class="desk-btn" id="themeBtn" title="밝게 / 어둡게 전환" style="border-color:var(--border-strong);color:var(--accent);padding:9px 12px">🌙</button>
     <button class="desk-btn" id="pg1Btn" style="border-color:var(--border-strong);color:var(--accent)">🎓 예비 고1 상담</button>
     <button class="desk-btn" id="faqBtn" style="border-color:var(--border-strong);color:var(--accent)">📋 상담 자료</button>
+    <button class="desk-btn" id="callDashBtn" hidden title="학원 전화 녹음 전사, 메이크에듀 기록, 선생님 메일, 리마인드 문자 진행 현황 (실장 모드 전용, 새 탭)" style="border-color:var(--border-strong);color:var(--accent)">📞 통화 처리 현황</button>
     <button class="desk-btn" id="deskBtn"><span class="dot"></span><span id="deskLabel">실장 전용 보기</span></button>
   </div>
 </div></header>
@@ -1613,7 +1614,18 @@ $("#tabs").addEventListener("click",e=>{const b=e.target.closest(".tab");if(!b)r
 const pin=$("#pin"),pinInput=$("#pinInput"),pinErr=$("#pinErr");
 function setDesk(on){document.body.classList.toggle("desk-on",on);
   $("#deskLabel").textContent=on?"실장 모드 ON · 끄기":"실장 전용 보기";
+  if(!on){ CALL_DASH=""; $("#callDashBtn").hidden=true; }
   if(!on && PREREG_PIN){ PREREG_PIN=""; loadPrereg(); }}
+/* 통화 처리 현황(학원 통화 기록 Apps Script 대시보드). 주소는 실장 PIN이 맞을 때만 서버가 내려 준다. */
+const CALL_URL = "https://script.google.com/macros/s/AKfycbwRW3coyE2MLB06KOT3PcowCCZK9cNNk5DMMVuGucczoFAxRDfwv8CJXxOPbASvVltQ/exec";
+let CALL_DASH = "";
+async function loadCallDash(p){
+  try{
+    const j=await fetch(CALL_URL+"?dashlink=1&pin="+encodeURIComponent(p)+"&cb="+Date.now()).then(r=>r.json());
+    if(j&&j.url&&document.body.classList.contains("desk-on")){CALL_DASH=j.url;$("#callDashBtn").hidden=false;}
+  }catch(e){}
+}
+$("#callDashBtn").addEventListener("click",()=>{if(CALL_DASH)window.open(CALL_DASH,"_blank","noopener");});
 $("#deskBtn").addEventListener("click",()=>{
   if(document.body.classList.contains("desk-on")){setDesk(false);return;}
   pin.classList.add("on");pinInput.value="";pinErr.textContent="";setTimeout(()=>pinInput.focus(),50);
@@ -1627,12 +1639,12 @@ async function tryPin(){
       const r=await fetch(WEBAPP_URL+sep+"pin="+encodeURIComponent(entered));
       const j=await r.json();
       const authed=j&&j.cards&&j.cards.some(c=>c.notes&&c.notes.length);
-      if(authed){CARDS=j.cards.filter(keepCard);applyCaps(CARDS);render();renderTime();pin.classList.remove("on");setDesk(true);PREREG_PIN=entered;loadPrereg();return;}
+      if(authed){CARDS=j.cards.filter(keepCard);applyCaps(CARDS);render();renderTime();pin.classList.remove("on");setDesk(true);PREREG_PIN=entered;loadPrereg();loadCallDash(entered);return;}
       pinErr.textContent="PIN이 올바르지 않습니다";pinInput.value="";pinInput.focus();return;
     }catch(e){pinErr.textContent="연결 오류 — 다시 시도하세요";return;}
   }
   // 오프라인(시트 미연동) 폴백 — 민감정보 없음
-  if(entered===DESK_PIN){pin.classList.remove("on");setDesk(true);PREREG_PIN=entered;loadPrereg();}
+  if(entered===DESK_PIN){pin.classList.remove("on");setDesk(true);PREREG_PIN=entered;loadPrereg();loadCallDash(entered);}
   else{pinErr.textContent="PIN이 올바르지 않습니다";pinInput.value="";pinInput.focus();}
 }
 $("#pinOk").addEventListener("click",tryPin);
